@@ -1,8 +1,8 @@
 import { Static } from "elysia";
 import {
-  signinBody,
-  signupBody,
-  updateProfileBody,
+  signinBodySchema,
+  signupBodySchema,
+  updateProfileBodySchema,
 } from "./schemas/request-body";
 import db from "@/src/utils/db";
 import ApiError from "@/src/utils/global-error";
@@ -10,7 +10,7 @@ import { Cookie } from "elysia/dist/cookies";
 import { User } from "@prisma/client";
 import { sendPasswordResetEmail } from "@/src/utils/email";
 
-export const signup = async (data: Static<typeof signupBody>) => {
+export const signupService = async (data: Static<typeof signupBodySchema>) => {
   const { email, name, password, avatarUrl } = data;
 
   const user = await db.user.findUnique({
@@ -41,7 +41,7 @@ export const signup = async (data: Static<typeof signupBody>) => {
   };
 };
 
-export const signin = async (data: Static<typeof signinBody>) => {
+export const signinService = async (data: Static<typeof signinBodySchema>) => {
   const { email, password } = data;
 
   const user = await db.user.findUnique({
@@ -65,7 +65,7 @@ export const signin = async (data: Static<typeof signinBody>) => {
   };
 };
 
-export const me = async (user: User | undefined) => {
+export const meService = async (user: User | undefined) => {
   if (!user?.id) throw new ApiError("User Doesnt Exists, Unautherized call");
 
   return {
@@ -75,7 +75,7 @@ export const me = async (user: User | undefined) => {
   };
 };
 
-export const signout = async (
+export const signoutService = async (
   accessToken: Cookie<unknown>,
   refreshToken: Cookie<unknown>
 ) => {
@@ -88,7 +88,7 @@ export const signout = async (
   };
 };
 
-export const refreshTokens = async () => {
+export const refreshTokensService = async () => {
   return {
     success: true,
     message: "Refreshed tokens successfully.",
@@ -96,7 +96,7 @@ export const refreshTokens = async () => {
   };
 };
 
-export const authcheckIfUserExists = async (email: string) => {
+export const authcheckIfUserExistsService = async (email: string) => {
   const user = await db.user.findUnique({
     where: { email },
   });
@@ -106,7 +106,10 @@ export const authcheckIfUserExists = async (email: string) => {
   return user;
 };
 
-export const forgotPassword = async (email: string, resetToken: string) => {
+export const forgotPasswordService = async (
+  email: string,
+  resetToken: string
+) => {
   await sendPasswordResetEmail(email, resetToken);
 
   return {
@@ -116,7 +119,7 @@ export const forgotPassword = async (email: string, resetToken: string) => {
   };
 };
 
-export const resetPassword = async (
+export const resetPasswordService = async (
   userId: string,
   newPassword: string,
   ref: string
@@ -143,9 +146,9 @@ export const resetPassword = async (
   };
 };
 
-export const updateProfile = async (
+export const updateProfileService = async (
   user: User | undefined,
-  data: Static<typeof updateProfileBody>
+  data: Static<typeof updateProfileBodySchema>
 ) => {
   if (!user) throw new ApiError("User Doesnt Exists, Unautherized call");
 

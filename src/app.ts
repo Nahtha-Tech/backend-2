@@ -53,8 +53,8 @@ const app = new Elysia()
         },
       },
 
-      // path: "/docs",
-      // specPath: "/docs/json",
+      path: "/docs",
+      specPath: "/docs/json",
     })
   )
 

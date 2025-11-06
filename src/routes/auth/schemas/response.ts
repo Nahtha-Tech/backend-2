@@ -1,7 +1,7 @@
 import { t } from "elysia";
 import { UserRole } from "@prisma/client";
 
-const signinResponse = t.Object({
+export const signinResponseSchema = t.Object({
   id: t.String(),
   email: t.String(),
   name: t.String(),
@@ -12,7 +12,7 @@ const signinResponse = t.Object({
   }),
 });
 
-const signupResponse = t.Object({
+export const signupResponseSchema = t.Object({
   id: t.String(),
   email: t.String(),
   name: t.String(),
@@ -23,7 +23,7 @@ const signupResponse = t.Object({
   }),
 });
 
-const getMeResponse = t.Object({
+export const getMeResponseSchema = t.Object({
   id: t.String(),
   name: t.String(),
   email: t.String(),
@@ -35,7 +35,7 @@ const getMeResponse = t.Object({
   updatedAt: t.Date(),
 });
 
-const updateProfileResponse = t.Object({
+export const updateProfileResponseSchema = t.Object({
   id: t.String(),
   name: t.String(),
   email: t.String(),
@@ -47,14 +47,7 @@ const updateProfileResponse = t.Object({
   updatedAt: t.Date(),
 });
 
-const signoutResponse = t.Null();
-const refreshTokensResponse = t.Null();
-
-export {
-  signinResponse,
-  signoutResponse,
-  refreshTokensResponse,
-  getMeResponse,
-  signupResponse,
-  updateProfileResponse,
-};
+export const signoutResponseSchema = t.Null();
+export const refreshTokensResponseSchema = t.Null();
+export const forgotPasswordResponseSchema = t.Null();
+export const resetPasswordResponseSchema = t.Null();

@@ -1,50 +1,48 @@
 import Elysia, { t } from "elysia";
-import { rateLimit } from "elysia-rate-limit";
 import {
-  signinDocs,
-  signupDocs,
-  signoutDocs,
-  refreshDocs,
-  meDocs,
-  forgotPasswordDocs,
-  resetPasswordDocs,
-  updateProfileDocs,
+  signinDoc,
+  signupDoc,
+  signoutDoc,
+  refreshDoc,
+  meDoc,
+  forgotPasswordDoc,
+  resetPasswordDoc,
+  updateProfileDoc,
 } from "./docs/docs";
 import {
   forgotPasswordBodySchema,
   resetPasswordBodySchema,
-  signinBody,
-  signupBody,
-  updateProfileBody,
+  signinBodySchema,
+  signupBodySchema,
+  updateProfileBodySchema,
 } from "./schemas/request-body";
 import {
-  authcheckIfUserExists,
-  forgotPassword,
-  me,
-  refreshTokens,
-  resetPassword,
-  signin,
-  signout,
-  signup,
-  updateProfile,
+  authcheckIfUserExistsService,
+  forgotPasswordService,
+  meService,
+  refreshTokensService,
+  resetPasswordService,
+  signinService,
+  signoutService,
+  signupService,
+  updateProfileService,
 } from "./service";
 import Response from "@/src/utils/global-response";
 import { jwt } from "@elysiajs/jwt";
 import {
-  signinResponse,
-  signupResponse,
-  signoutResponse,
-  refreshTokensResponse,
-  getMeResponse,
-  updateProfileResponse,
+  signinResponseSchema,
+  signupResponseSchema,
+  signoutResponseSchema,
+  refreshTokensResponseSchema,
+  getMeResponseSchema,
+  updateProfileResponseSchema,
+  forgotPasswordResponseSchema,
+  resetPasswordResponseSchema,
 } from "./schemas/response";
-import ApiError from "@/src/utils/global-error";
-import {
-  authRoutesRateLimit,
-  forgotPasswordLimit,
-} from "@/src/utils/constants";
 import { UserRole } from "@/prisma/prismabox/UserRole";
+import ApiError from "@/src/utils/global-error";
 import { authPlugin } from "@/src/plugins/auth-plugin";
+import { authRoutesRateLimit, forgotPasswordLimit } from "@/src/utils/constants";
 
 export const authRoutes = new Elysia({
   prefix: "/auth",
@@ -100,7 +98,7 @@ export const authRoutes = new Elysia({
           refreshJwt,
           cookie: { accessToken, refreshToken },
         }) => {
-          const user = await signin(body);
+          const user = await signinService(body);
 
           const payload = { sub: user.data.id, role: user.data.role };
 
@@ -124,20 +122,20 @@ export const authRoutes = new Elysia({
           return user;
         },
         {
-          detail: signinDocs,
-          body: signinBody,
-          response: Response(signinResponse),
+          detail: signinDoc,
+          body: signinBodySchema,
+          response: Response(signinResponseSchema),
         }
       )
       .post(
         "/sign-up",
         async ({ body }) => {
-          return await signup(body);
+          return await signupService(body);
         },
         {
-          detail: signupDocs,
-          body: signupBody,
-          response: Response(signupResponse),
+          detail: signupDoc,
+          body: signupBodySchema,
+          response: Response(signupResponseSchema),
         }
       )
   )
@@ -145,11 +143,11 @@ export const authRoutes = new Elysia({
   .post(
     "/sign-out",
     async ({ cookie: { accessToken, refreshToken } }) => {
-      return await signout(accessToken, refreshToken);
+      return await signoutService(accessToken, refreshToken);
     },
     {
-      detail: signoutDocs,
-      response: Response(signoutResponse),
+      detail: signoutDoc,
+      response: Response(signoutResponseSchema),
     }
   )
   .get(
@@ -184,11 +182,11 @@ export const authRoutes = new Elysia({
         maxAge: 5 * 24 * 60 * 60,
       });
 
-      return await refreshTokens();
+      return await refreshTokensService();
     },
     {
-      detail: refreshDocs,
-      response: Response(refreshTokensResponse),
+      detail: refreshDoc,
+      response: Response(refreshTokensResponseSchema),
     }
   )
 
@@ -198,7 +196,7 @@ export const authRoutes = new Elysia({
       .post(
         "/forgot-password",
         async ({ body, resetJwt }) => {
-          const user = await authcheckIfUserExists(body.email);
+          const user = await authcheckIfUserExistsService(body.email);
 
           const jwtPayload = await resetJwt.sign({
             sub: user.id,
@@ -206,12 +204,12 @@ export const authRoutes = new Elysia({
             ref: user.password.substring(0, 10),
           });
 
-          return await forgotPassword(body.email, jwtPayload);
+          return await forgotPasswordService(body.email, jwtPayload);
         },
         {
-          detail: forgotPasswordDocs,
+          detail: forgotPasswordDoc,
           body: forgotPasswordBodySchema,
-          response: Response(t.Null()),
+          response: Response(forgotPasswordResponseSchema),
         }
       )
       .post(
@@ -220,18 +218,17 @@ export const authRoutes = new Elysia({
           const verify = await resetJwt.verify(body.token);
           if (!verify || verify.type !== "password-reset")
             throw new ApiError("Invalid or expired token.");
-          const res = await resetPassword(
+
+          return await resetPasswordService(
             verify.sub,
             body.newPassword,
             verify.ref
           );
-
-          return res;
         },
         {
-          detail: resetPasswordDocs,
+          detail: resetPasswordDoc,
           body: resetPasswordBodySchema,
-          response: Response(t.Null()),
+          response: Response(resetPasswordResponseSchema),
         }
       )
   )
@@ -240,21 +237,21 @@ export const authRoutes = new Elysia({
   .get(
     "/me",
     async ({ user }) => {
-      return await me(user);
+      return await meService(user);
     },
     {
-      detail: meDocs,
-      response: Response(getMeResponse),
+      detail: meDoc,
+      response: Response(getMeResponseSchema),
     }
   )
   .patch(
     "/me",
     async ({ user, body }) => {
-      return await updateProfile(user, body);
+      return await updateProfileService(user, body);
     },
     {
-      detail: updateProfileDocs,
-      body: updateProfileBody,
-      response: Response(updateProfileResponse),
+      detail: updateProfileDoc,
+      body: updateProfileBodySchema,
+      response: Response(updateProfileResponseSchema),
     }
   );

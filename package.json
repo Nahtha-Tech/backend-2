@@ -11,7 +11,8 @@
     "@elysiajs/jwt": "^1.4.0",
     "@elysiajs/openapi": "^1.4.11",
     "elysia": "latest",
-    "elysia-rate-limit": "^4.4.2"
+    "elysia-rate-limit": "^4.4.2",
+    "resend": "^6.4.1"
   },
   "devDependencies": {
     "bun-types": "latest",

@@ -1,6 +1,6 @@
 import { t } from "elysia";
 
-export const signupBody = t.Object({
+export const signupBodySchema = t.Object({
   name: t.String({
     minLength: 2,
     maxLength: 50,
@@ -47,7 +47,7 @@ export const resetPasswordBodySchema = t.Object({
   }),
 });
 
-export const signinBody = t.Object({
+export const signinBodySchema = t.Object({
   email: t.String({
     format: "email",
     description: "Registered email",
@@ -61,7 +61,7 @@ export const signinBody = t.Object({
   }),
 });
 
-export const updateProfileBody = t.Object({
+export const updateProfileBodySchema = t.Object({
   name: t.Optional(
     t.String({
       minLength: 2,
@@ -93,7 +93,3 @@ export const updateProfileBody = t.Object({
     })
   ),
 });
-
-export type UpdateProfileBody = typeof updateProfileBody.static;
-export type SignupBody = typeof signupBody.static;
-export type SigninBody = typeof signinBody.static;
