@@ -42,7 +42,10 @@ import {
 import { UserRole } from "@/prisma/prismabox/UserRole";
 import ApiError from "@/src/utils/global-error";
 import { authPlugin } from "@/src/plugins/auth-plugin";
-import { authRoutesRateLimit, forgotPasswordLimit } from "@/src/utils/constants";
+import {
+  authRoutesRateLimit,
+  forgotPasswordLimit,
+} from "@/src/utils/constants";
 
 export const authRoutes = new Elysia({
   prefix: "/auth",
@@ -138,56 +141,55 @@ export const authRoutes = new Elysia({
           response: Response(signupResponseSchema),
         }
       )
-  )
+      .post(
+        "/sign-out",
+        async ({ cookie: { accessToken, refreshToken } }) => {
+          return await signoutService(accessToken, refreshToken);
+        },
+        {
+          detail: signoutDoc,
+          response: Response(signoutResponseSchema),
+        }
+      )
+      .post(
+        "/refresh-tokens",
+        async ({ jwt, refreshJwt, cookie: { accessToken, refreshToken } }) => {
+          const token = refreshToken.value;
+          if (!token) throw new ApiError("Refresh token missing");
 
-  .post(
-    "/sign-out",
-    async ({ cookie: { accessToken, refreshToken } }) => {
-      return await signoutService(accessToken, refreshToken);
-    },
-    {
-      detail: signoutDoc,
-      response: Response(signoutResponseSchema),
-    }
-  )
-  .get(
-    "/refresh-tokens",
-    async ({ jwt, refreshJwt, cookie: { accessToken, refreshToken } }) => {
-      const token = refreshToken.value;
-      if (!token) throw new ApiError("Refresh token missing");
+          const payload = await refreshJwt.verify(token.toString());
+          if (!payload) throw new ApiError("Invalid or expired refresh token");
 
-      const payload = await refreshJwt.verify(token.toString());
-      if (!payload) throw new ApiError("Invalid or expired refresh token");
+          const newSignedAccessToken = await jwt.sign({
+            sub: payload.sub,
+            role: payload.role,
+          });
+          if (!newSignedAccessToken)
+            throw new ApiError("Error while trying to sign new access token");
 
-      const newSignedAccessToken = await jwt.sign({
-        sub: payload.sub,
-        role: payload.role,
-      });
-      if (!newSignedAccessToken)
-        throw new ApiError("Error while trying to sign new access token");
+          const newSignedRefreshToken = await refreshJwt.sign({
+            sub: payload.sub,
+            role: payload.role,
+          });
+          if (!newSignedRefreshToken)
+            throw new ApiError("Error while trying to sign new refresh token");
 
-      const newSignedRefreshToken = await refreshJwt.sign({
-        sub: payload.sub,
-        role: payload.role,
-      });
-      if (!newSignedRefreshToken)
-        throw new ApiError("Error while trying to sign new refresh token");
+          accessToken.set({
+            value: newSignedAccessToken.toString(),
+            maxAge: 60 * 60,
+          });
+          refreshToken.set({
+            value: newSignedRefreshToken.toString(),
+            maxAge: 5 * 24 * 60 * 60,
+          });
 
-      accessToken.set({
-        value: newSignedAccessToken.toString(),
-        maxAge: 60 * 60,
-      });
-      refreshToken.set({
-        value: newSignedRefreshToken.toString(),
-        maxAge: 5 * 24 * 60 * 60,
-      });
-
-      return await refreshTokensService();
-    },
-    {
-      detail: refreshDoc,
-      response: Response(refreshTokensResponseSchema),
-    }
+          return await refreshTokensService();
+        },
+        {
+          detail: refreshDoc,
+          response: Response(refreshTokensResponseSchema),
+        }
+      )
   )
 
   .group("", (app) =>

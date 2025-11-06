@@ -196,7 +196,7 @@ export const adminListUserBranchesService = async (
       id: params.id,
     },
   });
-  if (!user?.id) throw new ApiError("User ith this email/id doesnt wexist.");
+  if (!user?.id) throw new ApiError("User with this email/id doesnt exist.");
 
   const memberships = await db.branchMembership.findMany({
     where: {
