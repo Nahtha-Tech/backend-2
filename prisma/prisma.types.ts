@@ -38,4 +38,12 @@ declare global {
       options: ItemVariantOption[];
     };
   }
+
+  type structureNode = {
+    type: "category" | "item";
+    id: string;
+    children?: structureNode[];
+  };
+
+  type menuStructure = structureNode[];
 }

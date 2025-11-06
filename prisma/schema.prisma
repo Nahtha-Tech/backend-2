@@ -60,6 +60,10 @@ model Organization {
   categories Category[]
   items      Item[]
 
+  /// [menuStructure]
+  menuStructure Json[]
+
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

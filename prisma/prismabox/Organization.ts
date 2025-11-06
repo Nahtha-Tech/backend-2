@@ -17,6 +17,9 @@ export const OrganizationPlain = t.Object(
     }),
     slug: t.String(),
     logoImgUrl: __nullable__(t.String()),
+    menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
+      additionalProperties: false,
+    }),
     createdAt: t.Date(),
     updatedAt: t.Date(),
   },
@@ -98,6 +101,9 @@ export const OrganizationPlainInputCreate = t.Object(
     }),
     slug: t.String(),
     logoImgUrl: t.Optional(__nullable__(t.String())),
+    menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
+      additionalProperties: false,
+    }),
   },
   { additionalProperties: false },
 );
@@ -118,6 +124,11 @@ export const OrganizationPlainInputUpdate = t.Object(
     ),
     slug: t.Optional(t.String()),
     logoImgUrl: t.Optional(__nullable__(t.String())),
+    menuStructure: t.Optional(
+      t.Array(t.Any({ description: `[menuStructure]` }), {
+        additionalProperties: false,
+      }),
+    ),
   },
   { additionalProperties: false },
 );
@@ -278,6 +289,9 @@ export const OrganizationWhere = t.Partial(
           }),
           slug: t.String(),
           logoImgUrl: t.String(),
+          menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
+            additionalProperties: false,
+          }),
           createdAt: t.Date(),
           updatedAt: t.Date(),
         },
@@ -331,6 +345,10 @@ export const OrganizationWhereUnique = t.Recursive(
               ),
               slug: t.String(),
               logoImgUrl: t.String(),
+              menuStructure: t.Array(
+                t.Any({ description: `[menuStructure]` }),
+                { additionalProperties: false },
+              ),
               createdAt: t.Date(),
               updatedAt: t.Date(),
             },
@@ -358,6 +376,7 @@ export const OrganizationSelect = t.Partial(
       users: t.Boolean(),
       categories: t.Boolean(),
       items: t.Boolean(),
+      menuStructure: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
       _count: t.Boolean(),
@@ -406,6 +425,9 @@ export const OrganizationOrderBy = t.Partial(
         additionalProperties: false,
       }),
       logoImgUrl: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      menuStructure: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
       createdAt: t.Union([t.Literal("asc"), t.Literal("desc")], {

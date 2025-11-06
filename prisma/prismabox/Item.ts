@@ -36,6 +36,9 @@ export const ItemRelations = t.Object(
         }),
         slug: t.String(),
         logoImgUrl: __nullable__(t.String()),
+        menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
+          additionalProperties: false,
+        }),
         createdAt: t.Date(),
         updatedAt: t.Date(),
       },

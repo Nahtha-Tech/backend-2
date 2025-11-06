@@ -1,21 +1,21 @@
 import { t } from "elysia";
 
-export const categorySelectQueryParamsSchema = t.Object({
+export const itemSelectQueryParamsSchema = t.Object({
   id: t.Optional(
     t.String({
       format: "uuid",
-      description: "Category id",
+      description: "Item id",
     })
   ),
   slug: t.Optional(
     t.String({
       format: "uri-reference",
-      description: "Category slug",
+      description: "Item slug",
     })
   ),
 });
 
-export const listCategoriesQueryParamsSchema = t.Object({
+export const listItemsQueryParamsSchema = t.Object({
   page: t.Optional(
     t.Number({
       minimum: 1,
@@ -33,10 +33,10 @@ export const listCategoriesQueryParamsSchema = t.Object({
   ),
 });
 
-export const searchCategoriesQueryParamsSchema = t.Object({
+export const searchItemsQueryParamsSchema = t.Object({
   search: t.String({
     minLength: 1,
-    description: "Search term for category name",
+    description: "Search term for item name",
   }),
   page: t.Optional(
     t.Number({

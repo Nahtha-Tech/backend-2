@@ -84,8 +84,7 @@ export const updateCategoryService = async (
 ) => {
   const category = await db.category.findFirst({
     where: {
-      slug: params.slug,
-      id: params.id,
+      ...params,
       organizationId,
     },
   });
@@ -131,8 +130,7 @@ export const deleteCategoryService = async (
 ) => {
   const category = await db.category.findFirst({
     where: {
-      slug: params.slug,
-      id: params.id,
+      ...params,
       organizationId,
     },
   });
@@ -161,8 +159,7 @@ export const showCategoryService = async (
 
   const category = await db.category.findFirst({
     where: {
-      slug: params.slug,
-      id: params.id,
+      ...params,
       organizationId,
     },
   });
