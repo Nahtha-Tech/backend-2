@@ -63,6 +63,7 @@ model Organization {
   /// [menuStructure]
   menuStructure Json[]
 
+  medias Media[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,4 +108,29 @@ model Item {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  key       String   @unique
+  name      String
+  size      Int
+  originalSize Int
+  originalName String
+  type      MediaType
+  entityId  String
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MediaType {
+  categoryImage
+  itemImage
+  orgLogo
+  avatarImage
 }

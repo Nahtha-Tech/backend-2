@@ -83,6 +83,34 @@ export const OrganizationRelations = t.Object(
       ),
       { additionalProperties: false },
     ),
+    medias: t.Array(
+      t.Object(
+        {
+          id: t.String(),
+          url: t.String(),
+          key: t.String(),
+          name: t.String(),
+          size: t.Integer(),
+          originalSize: t.Integer(),
+          originalName: t.String(),
+          type: t.Union(
+            [
+              t.Literal("categoryImage"),
+              t.Literal("itemImage"),
+              t.Literal("orgLogo"),
+              t.Literal("avatarImage"),
+            ],
+            { additionalProperties: false },
+          ),
+          entityId: t.String(),
+          organizationId: t.String(),
+          createdAt: t.Date(),
+          updatedAt: t.Date(),
+        },
+        { additionalProperties: false },
+      ),
+      { additionalProperties: false },
+    ),
   },
   { additionalProperties: false },
 );
@@ -183,6 +211,22 @@ export const OrganizationRelationsInputCreate = t.Object(
         { additionalProperties: false },
       ),
     ),
+    medias: t.Optional(
+      t.Object(
+        {
+          connect: t.Array(
+            t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    ),
   },
   { additionalProperties: false },
 );
@@ -241,6 +285,31 @@ export const OrganizationRelationsInputUpdate = t.Partial(
         ),
       ),
       items: t.Partial(
+        t.Object(
+          {
+            connect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+              { additionalProperties: false },
+            ),
+            disconnect: t.Array(
+              t.Object(
+                {
+                  id: t.String({ additionalProperties: false }),
+                },
+                { additionalProperties: false },
+              ),
+              { additionalProperties: false },
+            ),
+          },
+          { additionalProperties: false },
+        ),
+      ),
+      medias: t.Partial(
         t.Object(
           {
             connect: t.Array(
@@ -377,6 +446,7 @@ export const OrganizationSelect = t.Partial(
       categories: t.Boolean(),
       items: t.Boolean(),
       menuStructure: t.Boolean(),
+      medias: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
       _count: t.Boolean(),
@@ -391,6 +461,7 @@ export const OrganizationInclude = t.Partial(
       users: t.Boolean(),
       categories: t.Boolean(),
       items: t.Boolean(),
+      medias: t.Boolean(),
       _count: t.Boolean(),
     },
     { additionalProperties: false },
