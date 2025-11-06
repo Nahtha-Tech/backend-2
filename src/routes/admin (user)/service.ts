@@ -1,6 +1,10 @@
 import db from "@/src/utils/db";
 import { Static } from "elysia";
-import { createUserBodySchema, updateUserBodySchema } from "./schemas/request-body";
+import {
+  assignUserToOrgBodySchema,
+  createUserBodySchema,
+  updateUserBodySchema,
+} from "./schemas/request-body";
 import ApiError from "@/src/utils/global-error";
 import {
   adminDeleteUserQueryParamsSchema,
@@ -9,7 +13,7 @@ import {
 } from "./schemas/query-params";
 
 export const adminListAllUsersService = async (
-  params: Static<typeof adminListUsersQueryParamsSchema>,
+  params: Static<typeof adminListUsersQueryParamsSchema>
 ) => {
   const page = params.page || 1;
   const limit = params.limit || 10;
@@ -61,7 +65,7 @@ export const adminListAllUsersService = async (
 };
 
 export const adminCreateUserService = async (
-  body: Static<typeof createUserBodySchema>,
+  body: Static<typeof createUserBodySchema>
 ) => {
   const check = await db.user.findUnique({
     where: {
@@ -101,7 +105,7 @@ export const adminCreateUserService = async (
 
 export const adminUpdateUserService = async (
   params: Static<typeof userSelectQueryParamsSchema>,
-  body: Static<typeof updateUserBodySchema>,
+  body: Static<typeof updateUserBodySchema>
 ) => {
   const user = await db.user.findFirst({
     where: {
@@ -127,7 +131,8 @@ export const adminUpdateUserService = async (
   const updateData: any = {};
   if (body.name) updateData.name = body.name;
   if (body.email) updateData.email = body.email;
-  if (body.avatarUrl !== undefined) updateData.avatarUrl = body.avatarUrl || null;
+  if (body.avatarUrl !== undefined)
+    updateData.avatarUrl = body.avatarUrl || null;
   if (body.role) updateData.role = body.role;
   if (body.password) {
     updateData.password = await Bun.password.hash(body.password);
@@ -158,7 +163,7 @@ export const adminUpdateUserService = async (
 };
 
 export const adminDeleteUserService = async (
-  params: Static<typeof adminDeleteUserQueryParamsSchema>,
+  params: Static<typeof adminDeleteUserQueryParamsSchema>
 ) => {
   const user = await db.user.findFirst({
     where: {
@@ -181,7 +186,7 @@ export const adminDeleteUserService = async (
 };
 
 export const adminShowUserService = async (
-  params: Static<typeof userSelectQueryParamsSchema>,
+  params: Static<typeof userSelectQueryParamsSchema>
 ) => {
   if (!params.id && !params.email)
     throw new ApiError("Please provide id or email of the user");
@@ -207,5 +212,50 @@ export const adminShowUserService = async (
     success: true,
     message: "User details fetched successfully",
     data: user,
+  };
+};
+
+export const adminAssignUserToOrgService = async (
+  params: Static<typeof userSelectQueryParamsSchema>,
+  body: Static<typeof assignUserToOrgBodySchema>
+) => {
+  const user = await db.user.findFirst({
+    where: {
+      email: params.email,
+      id: params.id,
+    },
+  });
+
+  if (!user?.id) throw new ApiError("User with this email/id doesnt exist");
+
+  const org = await db.organization.findUnique({
+    where: { id: body.organizationId },
+  });
+
+  if (!org?.id) throw new ApiError("Organization doesnt exist");
+
+  const updating = await db.user.update({
+    where: { id: user.id },
+    data: {
+      organizationId: body.organizationId,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatarUrl: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!updating?.id)
+    throw new ApiError("Issue happened while trying to assign user");
+
+  return {
+    success: true,
+    message: "User assigned to organization successfully",
+    data: updating,
   };
 };

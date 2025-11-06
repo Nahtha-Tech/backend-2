@@ -1,11 +1,16 @@
 import Elysia from "elysia";
-import { createUserBodySchema, updateUserBodySchema } from "./schemas/request-body";
+import {
+  assignUserToOrgBodySchema,
+  createUserBodySchema,
+  updateUserBodySchema,
+} from "./schemas/request-body";
 import {
   adminDeleteUserQueryParamsSchema,
   adminListUsersQueryParamsSchema,
   userSelectQueryParamsSchema,
 } from "./schemas/query-params";
 import {
+  adminAssignUserToOrgDocs,
   adminCreateUserDocs,
   adminDeleteUserDocs,
   adminListUsersDocs,
@@ -14,6 +19,7 @@ import {
 } from "./docs/docs";
 import Response from "@/src/utils/global-response";
 import {
+  adminAssignUserToOrgResponseSchema,
   adminCreateUserResponseSchema,
   adminDeleteUserResponseSchema,
   adminListUsersResponseSchema,
@@ -22,6 +28,7 @@ import {
 } from "./schemas/response";
 import { adminCheckPlugin } from "@/src/plugins/auth-plugin";
 import {
+  adminAssignUserToOrgService,
   adminCreateUserService,
   adminDeleteUserService,
   adminListAllUsersService,
@@ -44,7 +51,7 @@ export const adminUserRoutes = new Elysia({
       detail: adminListUsersDocs,
       response: Response(adminListUsersResponseSchema),
       query: adminListUsersQueryParamsSchema,
-    },
+    }
   )
   .post(
     "/",
@@ -55,7 +62,7 @@ export const adminUserRoutes = new Elysia({
       body: createUserBodySchema,
       detail: adminCreateUserDocs,
       response: Response(adminCreateUserResponseSchema),
-    },
+    }
   )
   .patch(
     "/",
@@ -67,7 +74,7 @@ export const adminUserRoutes = new Elysia({
       query: userSelectQueryParamsSchema,
       detail: adminUpdateUserDocs,
       response: Response(adminUpdateUserResponseSchema),
-    },
+    }
   )
   .delete(
     "/",
@@ -78,7 +85,7 @@ export const adminUserRoutes = new Elysia({
       query: adminDeleteUserQueryParamsSchema,
       detail: adminDeleteUserDocs,
       response: Response(adminDeleteUserResponseSchema),
-    },
+    }
   )
   .get(
     "/show",
@@ -89,5 +96,17 @@ export const adminUserRoutes = new Elysia({
       query: userSelectQueryParamsSchema,
       detail: adminShowUserDocs,
       response: Response(adminShowUserResponseSchema),
+    }
+  )
+  .patch(
+    "/assign-org",
+    async ({ body, query }) => {
+      return await adminAssignUserToOrgService(query, body);
     },
+    {
+      body: assignUserToOrgBodySchema,
+      query: userSelectQueryParamsSchema,
+      detail: adminAssignUserToOrgDocs,
+      response: Response(adminAssignUserToOrgResponseSchema),
+    }
   );

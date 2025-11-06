@@ -29,3 +29,9 @@ export const adminShowUserDocs: DocumentDecoration = {
   description: "Show user details",
   operationId: "adminShowUser",
 };
+
+export const adminAssignUserToOrgDocs: DocumentDecoration = {
+  summary: "Assign user to organization",
+  description: "Assign user to an organization",
+  operationId: "adminAssignUserToOrg",
+};

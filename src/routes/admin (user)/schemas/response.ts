@@ -24,3 +24,4 @@ export const adminCreateUserResponseSchema = UserResponseSchema;
 export const adminUpdateUserResponseSchema = UserResponseSchema;
 export const adminDeleteUserResponseSchema = t.Null();
 export const adminShowUserResponseSchema = UserResponseSchema;
+export const adminAssignUserToOrgResponseSchema = UserResponseSchema;
