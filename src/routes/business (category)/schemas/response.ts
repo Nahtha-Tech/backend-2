@@ -21,3 +21,4 @@ export const listCategoriesResponseSchema = t.Object({
 export const createCategoryResponseSchema = CategoryResponseSchema;
 export const updateCategoryResponseSchema = CategoryResponseSchema;
 export const deleteCategoryResponseSchema = t.Null();
+export const showCategoryResponseSchema = CategoryResponseSchema;

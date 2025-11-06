@@ -150,3 +150,27 @@ export const deleteCategoryService = async (
     data: null,
   };
 };
+
+export const showCategoryService = async (
+  organizationId: string,
+  params: Static<typeof categorySelectQueryParamsSchema>
+) => {
+  if (!params.id && !params.slug)
+    throw new ApiError("Please provide id or slug of the category");
+
+  const category = await db.category.findFirst({
+    where: {
+      slug: params.slug,
+      id: params.id,
+      organizationId,
+    },
+  });
+  if (!category?.id)
+    throw new ApiError("Category with this slug/id doesnt exist");
+
+  return {
+    success: true,
+    message: "Category details fetched successfully",
+    data: category,
+  };
+};

@@ -11,6 +11,7 @@ import {
   createCategoryDocs,
   deleteCategoryDocs,
   listCategoriesDocs,
+  showCategoryDocs,
   updateCategoryDocs,
 } from "./docs/docs";
 import Response from "@/src/utils/global-response";
@@ -18,6 +19,7 @@ import {
   createCategoryResponseSchema,
   deleteCategoryResponseSchema,
   listCategoriesResponseSchema,
+  showCategoryResponseSchema,
   updateCategoryResponseSchema,
 } from "./schemas/response";
 import { businessPlugin } from "@/src/plugins/auth-plugin";
@@ -25,6 +27,7 @@ import {
   createCategoryService,
   deleteCategoryService,
   listCategoriesService,
+  showCategoryService,
   updateCategoryService,
 } from "./service";
 
@@ -77,5 +80,16 @@ export const businessCategoryRoutes = new Elysia({
       query: categorySelectQueryParamsSchema,
       detail: deleteCategoryDocs,
       response: Response(deleteCategoryResponseSchema),
+    }
+  )
+  .get(
+    "/show",
+    async ({ query, organizationId }) => {
+      return await showCategoryService(organizationId, query);
+    },
+    {
+      query: categorySelectQueryParamsSchema,
+      detail: showCategoryDocs,
+      response: Response(showCategoryResponseSchema),
     }
   );

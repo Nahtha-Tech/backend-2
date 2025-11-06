@@ -23,3 +23,9 @@ export const deleteCategoryDocs: DocumentDecoration = {
   description: "Delete category",
   operationId: "deleteCategory",
 };
+
+export const showCategoryDocs: DocumentDecoration = {
+  summary: "Show category",
+  description: "Show category details",
+  operationId: "showCategory",
+};
