@@ -2,7 +2,7 @@ import { DocumentDecoration } from "elysia";
 
 export const adminListUsersDocs: DocumentDecoration = {
   summary: "List users",
-  description: "List all users",
+  description: "List all users with pagination",
   operationId: "adminListUsers",
 };
 

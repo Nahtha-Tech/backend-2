@@ -12,7 +12,14 @@ const UserResponseSchema = t.Object({
   updatedAt: t.Date(),
 });
 
-export const adminListUsersResponseSchema = t.Array(UserResponseSchema);
+export const adminListUsersResponseSchema = t.Object({
+  total: t.Number(),
+  page: t.Number(),
+  limit: t.Number(),
+  totalPages: t.Number(),
+  users: t.Array(UserResponseSchema),
+});
+
 export const adminCreateUserResponseSchema = UserResponseSchema;
 export const adminUpdateUserResponseSchema = UserResponseSchema;
 export const adminDeleteUserResponseSchema = t.Null();

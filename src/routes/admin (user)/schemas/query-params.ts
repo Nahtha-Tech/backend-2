@@ -38,6 +38,21 @@ export const adminListUsersQueryParamsSchema = t.Object({
       description: "User role",
     })
   ),
+  page: t.Optional(
+    t.Number({
+      minimum: 1,
+      default: 1,
+      description: "Page number",
+    })
+  ),
+  limit: t.Optional(
+    t.Number({
+      minimum: 1,
+      maximum: 100,
+      default: 10,
+      description: "Items per page",
+    })
+  ),
 });
 
 export const adminDeleteUserQueryParamsSchema = t.Object({

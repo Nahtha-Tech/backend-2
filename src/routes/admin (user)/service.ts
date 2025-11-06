@@ -1,9 +1,6 @@
 import db from "@/src/utils/db";
 import { Static } from "elysia";
-import {
-  createUserBodySchema,
-  updateUserBodySchema,
-} from "./schemas/request-body";
+import { createUserBodySchema, updateUserBodySchema } from "./schemas/request-body";
 import ApiError from "@/src/utils/global-error";
 import {
   adminDeleteUserQueryParamsSchema,
@@ -12,40 +9,59 @@ import {
 } from "./schemas/query-params";
 
 export const adminListAllUsersService = async (
-  params: Static<typeof adminListUsersQueryParamsSchema>
+  params: Static<typeof adminListUsersQueryParamsSchema>,
 ) => {
-  const users = await db.user.findMany({
-    where: {
-      id: params.id,
-      email: params.email,
-      role: params.role,
-      name: params.name
-        ? {
-            contains: params.name,
-            mode: "insensitive",
-          }
-        : undefined,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatarUrl: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  const page = params.page || 1;
+  const limit = params.limit || 10;
+  const skip = (page - 1) * limit;
+
+  const where = {
+    id: params.id,
+    email: params.email,
+    role: params.role,
+    name: params.name
+      ? {
+          contains: params.name,
+          mode: "insensitive" as const,
+        }
+      : undefined,
+  };
+
+  const [users, total] = await Promise.all([
+    db.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatarUrl: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      skip,
+      take: limit,
+    }),
+    db.user.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
 
   return {
     success: true,
     message: "All users listed successfully",
-    data: users,
+    data: {
+      total,
+      page,
+      limit,
+      totalPages,
+      users,
+    },
   };
 };
 
 export const adminCreateUserService = async (
-  body: Static<typeof createUserBodySchema>
+  body: Static<typeof createUserBodySchema>,
 ) => {
   const check = await db.user.findUnique({
     where: {
@@ -85,7 +101,7 @@ export const adminCreateUserService = async (
 
 export const adminUpdateUserService = async (
   params: Static<typeof userSelectQueryParamsSchema>,
-  body: Static<typeof updateUserBodySchema>
+  body: Static<typeof updateUserBodySchema>,
 ) => {
   const user = await db.user.findFirst({
     where: {
@@ -111,8 +127,7 @@ export const adminUpdateUserService = async (
   const updateData: any = {};
   if (body.name) updateData.name = body.name;
   if (body.email) updateData.email = body.email;
-  if (body.avatarUrl !== undefined)
-    updateData.avatarUrl = body.avatarUrl || null;
+  if (body.avatarUrl !== undefined) updateData.avatarUrl = body.avatarUrl || null;
   if (body.role) updateData.role = body.role;
   if (body.password) {
     updateData.password = await Bun.password.hash(body.password);
@@ -143,7 +158,7 @@ export const adminUpdateUserService = async (
 };
 
 export const adminDeleteUserService = async (
-  params: Static<typeof adminDeleteUserQueryParamsSchema>
+  params: Static<typeof adminDeleteUserQueryParamsSchema>,
 ) => {
   const user = await db.user.findFirst({
     where: {
@@ -166,7 +181,7 @@ export const adminDeleteUserService = async (
 };
 
 export const adminShowUserService = async (
-  params: Static<typeof userSelectQueryParamsSchema>
+  params: Static<typeof userSelectQueryParamsSchema>,
 ) => {
   if (!params.id && !params.email)
     throw new ApiError("Please provide id or email of the user");
