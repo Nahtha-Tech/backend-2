@@ -21,6 +21,20 @@ const SocialMediaLinkSchema = t.Object({
   link: t.String(),
 });
 
+const PlanSchema = t.Object({
+  id: t.String(),
+  name: t.Any(),
+  description: t.Nullable(t.Any()),
+  price: t.Number(),
+  maxCategories: t.Number(),
+  maxItems: t.Number(),
+  maxStaff: t.Number(),
+  maxMedia: t.Number(),
+  isActive: t.Boolean(),
+  createdAt: t.Date(),
+  updatedAt: t.Date(),
+});
+
 const OrgResponseSchema = t.Object({
   id: t.String(),
   name: t.Any(),
@@ -31,6 +45,15 @@ const OrgResponseSchema = t.Object({
   socialMedia: t.Array(t.Any()),
   slug: t.String(),
   logoImgUrl: t.Nullable(t.String()),
+  plan: t.Nullable(PlanSchema),
+  menuStructure: t.Array(
+    t.Object({
+      type: t.Union([t.Literal("category"), t.Literal("item")]),
+      id: t.String(),
+      order: t.Number(),
+      children: t.Optional(t.Array(t.Any())),
+    })
+  ),
   createdAt: t.Date(),
   updatedAt: t.Date(),
 });

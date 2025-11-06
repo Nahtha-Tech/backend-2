@@ -27,6 +27,7 @@ export const adminListAllOrgsService = async (
   const [orgs, total] = await Promise.all([
     db.organization.findMany({
       where,
+      include: { plan: true },
       skip,
       take: limit,
     }),
@@ -59,6 +60,13 @@ export const adminCreateOrgService = async (
   if (check?.id)
     throw new ApiError("Organization with this slug already exists");
 
+  if (body.planId) {
+    const plan = await db.plan.findUnique({
+      where: { id: body.planId },
+    });
+    if (!plan?.id) throw new ApiError("Plan with this id doesnt exist");
+  }
+
   const newOrg = await db.organization.create({
     data: {
       name: body.name,
@@ -69,7 +77,9 @@ export const adminCreateOrgService = async (
       socialMedia: body.socialMedia || [],
       slug: body.slug,
       logoImgUrl: body.logoImgUrl,
+      planId: body.planId || null,
     },
+    include: { plan: true },
   });
 
   if (!newOrg?.id)
@@ -108,6 +118,13 @@ export const adminUpdateOrgService = async (
     }
   }
 
+  if (body.planId) {
+    const plan = await db.plan.findUnique({
+      where: { id: body.planId },
+    });
+    if (!plan?.id) throw new ApiError("Plan with this id doesnt exist");
+  }
+
   const updateData: any = {};
   if (body.name) updateData.name = body.name;
   if (body.description !== undefined) updateData.description = body.description;
@@ -118,10 +135,12 @@ export const adminUpdateOrgService = async (
   if (body.socialMedia !== undefined) updateData.socialMedia = body.socialMedia;
   if (body.slug) updateData.slug = body.slug;
   if (body.logoImgUrl !== undefined) updateData.logoImgUrl = body.logoImgUrl;
+  if (body.planId !== undefined) updateData.planId = body.planId;
 
   const updating = await db.organization.update({
     where: { id: org.id },
     data: updateData,
+    include: { plan: true },
   });
 
   if (!updating?.id)
@@ -170,6 +189,7 @@ export const adminShowOrgService = async (
       slug: params.slug,
       id: params.id,
     },
+    include: { plan: true },
   });
   if (!org?.id)
     throw new ApiError("Organization with this slug/id doesnt exist");

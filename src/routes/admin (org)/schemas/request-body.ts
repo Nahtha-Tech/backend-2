@@ -68,6 +68,12 @@ export const createOrgBodySchema = t.Object({
       examples: ["https://example.com/logo.jpg"],
     })
   ),
+  planId: t.Optional(
+    t.String({
+      format: "uuid",
+      description: "Plan ID to assign to organization",
+    })
+  ),
 });
 
 export const updateOrgBodySchema = t.Object({
@@ -110,6 +116,12 @@ export const updateOrgBodySchema = t.Object({
       format: "uri",
       description: "Organization logo URL",
       examples: ["https://example.com/logo.jpg"],
+    })
+  ),
+  planId: t.Optional(
+    t.String({
+      format: "uuid",
+      description: "Plan ID to assign to organization",
     })
   ),
 });
