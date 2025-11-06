@@ -10,6 +10,7 @@ import { getMenuStructureQueryParamsSchema } from "./schemas/query-params";
 export const getOrgService = async (organizationId: string) => {
   const org = await db.organization.findUnique({
     where: { id: organizationId },
+    include: { plan: true },
   });
 
   if (!org) throw new ApiError("Organization not found");
@@ -44,6 +45,7 @@ export const updateOrgService = async (
   const updated = await db.organization.update({
     where: { id: organizationId },
     data: updateData,
+    include: { plan: true },
   });
 
   if (!updated) throw new ApiError("Failed to update organization");
