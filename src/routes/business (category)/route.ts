@@ -6,11 +6,13 @@ import {
 import {
   categorySelectQueryParamsSchema,
   listCategoriesQueryParamsSchema,
+  searchCategoriesQueryParamsSchema,
 } from "./schemas/query-params";
 import {
   createCategoryDocs,
   deleteCategoryDocs,
   listCategoriesDocs,
+  searchCategoriesDocs,
   showCategoryDocs,
   updateCategoryDocs,
 } from "./docs/docs";
@@ -19,6 +21,7 @@ import {
   createCategoryResponseSchema,
   deleteCategoryResponseSchema,
   listCategoriesResponseSchema,
+  searchCategoriesResponseSchema,
   showCategoryResponseSchema,
   updateCategoryResponseSchema,
 } from "./schemas/response";
@@ -27,6 +30,7 @@ import {
   createCategoryService,
   deleteCategoryService,
   listCategoriesService,
+  searchCategoriesService,
   showCategoryService,
   updateCategoryService,
 } from "./service";
@@ -91,5 +95,16 @@ export const businessCategoryRoutes = new Elysia({
       query: categorySelectQueryParamsSchema,
       detail: showCategoryDocs,
       response: Response(showCategoryResponseSchema),
+    }
+  )
+  .get(
+    "/search",
+    async ({ query, organizationId }) => {
+      return await searchCategoriesService(organizationId, query);
+    },
+    {
+      query: searchCategoriesQueryParamsSchema,
+      detail: searchCategoriesDocs,
+      response: Response(searchCategoriesResponseSchema),
     }
   );

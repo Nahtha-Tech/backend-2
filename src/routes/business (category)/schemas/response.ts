@@ -18,6 +18,14 @@ export const listCategoriesResponseSchema = t.Object({
   categories: t.Array(CategoryResponseSchema),
 });
 
+export const searchCategoriesResponseSchema = t.Object({
+  total: t.Number(),
+  page: t.Number(),
+  limit: t.Number(),
+  totalPages: t.Number(),
+  categories: t.Array(CategoryResponseSchema),
+});
+
 export const createCategoryResponseSchema = CategoryResponseSchema;
 export const updateCategoryResponseSchema = CategoryResponseSchema;
 export const deleteCategoryResponseSchema = t.Null();

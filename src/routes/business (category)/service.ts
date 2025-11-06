@@ -8,6 +8,7 @@ import ApiError from "@/src/utils/global-error";
 import {
   categorySelectQueryParamsSchema,
   listCategoriesQueryParamsSchema,
+  searchCategoriesQueryParamsSchema,
 } from "./schemas/query-params";
 
 export const listCategoriesService = async (
@@ -172,5 +173,48 @@ export const showCategoryService = async (
     success: true,
     message: "Category details fetched successfully",
     data: category,
+  };
+};
+
+export const searchCategoriesService = async (
+  organizationId: string,
+  params: Static<typeof searchCategoriesQueryParamsSchema>
+) => {
+  const page = params.page || 1;
+  const limit = params.limit || 10;
+  const skip = (page - 1) * limit;
+
+  const searchTerm = params.search.toLowerCase();
+
+  const allCategories = await db.category.findMany({
+    where: {
+      organizationId,
+    },
+  });
+
+  const filteredCategories = allCategories.filter((category) => {
+    const name = category.name as PrismaJson.LocalString;
+    return (
+      name.en?.toLowerCase().includes(searchTerm) ||
+      name.ar?.toLowerCase().includes(searchTerm) ||
+      name.ku?.toLowerCase().includes(searchTerm) ||
+      name.tr?.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  const total = filteredCategories.length;
+  const categories = filteredCategories.slice(skip, skip + limit);
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    success: true,
+    message: "Categories searched successfully",
+    data: {
+      total,
+      page,
+      limit,
+      totalPages,
+      categories,
+    },
   };
 };

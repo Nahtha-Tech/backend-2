@@ -29,3 +29,9 @@ export const showCategoryDocs: DocumentDecoration = {
   description: "Show category details",
   operationId: "showCategory",
 };
+
+export const searchCategoriesDocs: DocumentDecoration = {
+  summary: "Search categories",
+  description: "Search categories by name across all languages",
+  operationId: "searchCategories",
+};
