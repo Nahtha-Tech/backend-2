@@ -18,7 +18,6 @@ generator prismabox {
   inputModel                  = true
 }
 
-
 model User {
   id        String  @id @default(uuid())
   name      String
@@ -26,7 +25,10 @@ model User {
   password  String
   avatarUrl String?
 
-  role        UserRole           @default(User)
+  role        UserRole @default(User)
+  
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -35,4 +37,70 @@ model User {
 enum UserRole {
   Admin
   User
+}
+
+model Organization {
+  id          String  @id @default(uuid())
+  
+  /// [LocalString]
+  name        Json
+  /// [LocalString]
+  description Json?
+  phoneNumber String?
+  email       String?
+  
+  googleMapsLink String?
+  /// [SocialMediaLink]
+  socialMedia   Json[]
+
+  slug        String  @unique
+  logoImgUrl  String?
+
+  users      User[]
+  categories Category[]
+  items      Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id             String  @id @default(uuid())
+  slug           String  @unique
+  /// [LocalString]
+  name           Json
+  imageUrl       String?
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  
+  items          Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id          String @id @default(uuid())
+  slug        String @unique
+
+  /// [LocalString]
+  name        Json
+  /// [LocalString]
+  description Json?
+
+  imageUrl    String[]
+  basePrice   String
+
+  /// [ItemVariantGroup]
+  variantGroups Json?
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  
+  category       Category? @relation(fields: [categoryId], references: [id])
+  categoryId     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -14,13 +14,38 @@ export const UserPlain = t.Object(
     role: t.Union([t.Literal("Admin"), t.Literal("User")], {
       additionalProperties: false,
     }),
+    organizationId: __nullable__(t.String()),
     createdAt: t.Date(),
     updatedAt: t.Date(),
   },
   { additionalProperties: false },
 );
 
-export const UserRelations = t.Object({}, { additionalProperties: false });
+export const UserRelations = t.Object(
+  {
+    organization: __nullable__(
+      t.Object(
+        {
+          id: t.String(),
+          name: t.Any({ description: `[LocalString]` }),
+          description: __nullable__(t.Any({ description: `[LocalString]` })),
+          phoneNumber: __nullable__(t.String()),
+          email: __nullable__(t.String()),
+          googleMapsLink: __nullable__(t.String()),
+          socialMedia: t.Array(t.Any({ description: `[SocialMediaLink]` }), {
+            additionalProperties: false,
+          }),
+          slug: t.String(),
+          logoImgUrl: __nullable__(t.String()),
+          createdAt: t.Date(),
+          updatedAt: t.Date(),
+        },
+        { additionalProperties: false },
+      ),
+    ),
+  },
+  { additionalProperties: false },
+);
 
 export const UserPlainInputCreate = t.Object(
   {
@@ -53,12 +78,44 @@ export const UserPlainInputUpdate = t.Object(
 );
 
 export const UserRelationsInputCreate = t.Object(
-  {},
+  {
+    organization: t.Optional(
+      t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    ),
+  },
   { additionalProperties: false },
 );
 
 export const UserRelationsInputUpdate = t.Partial(
-  t.Object({}, { additionalProperties: false }),
+  t.Object(
+    {
+      organization: t.Partial(
+        t.Object(
+          {
+            connect: t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+            disconnect: t.Boolean(),
+          },
+          { additionalProperties: false },
+        ),
+      ),
+    },
+    { additionalProperties: false },
+  ),
 );
 
 export const UserWhere = t.Partial(
@@ -77,6 +134,7 @@ export const UserWhere = t.Partial(
           role: t.Union([t.Literal("Admin"), t.Literal("User")], {
             additionalProperties: false,
           }),
+          organizationId: t.String(),
           createdAt: t.Date(),
           updatedAt: t.Date(),
         },
@@ -126,6 +184,7 @@ export const UserWhereUnique = t.Recursive(
               role: t.Union([t.Literal("Admin"), t.Literal("User")], {
                 additionalProperties: false,
               }),
+              organizationId: t.String(),
               createdAt: t.Date(),
               updatedAt: t.Date(),
             },
@@ -147,6 +206,8 @@ export const UserSelect = t.Partial(
       password: t.Boolean(),
       avatarUrl: t.Boolean(),
       role: t.Boolean(),
+      organization: t.Boolean(),
+      organizationId: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
       _count: t.Boolean(),
@@ -157,7 +218,7 @@ export const UserSelect = t.Partial(
 
 export const UserInclude = t.Partial(
   t.Object(
-    { role: t.Boolean(), _count: t.Boolean() },
+    { role: t.Boolean(), organization: t.Boolean(), _count: t.Boolean() },
     { additionalProperties: false },
   ),
 );
@@ -178,6 +239,9 @@ export const UserOrderBy = t.Partial(
         additionalProperties: false,
       }),
       avatarUrl: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      organizationId: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
       createdAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
