@@ -25,8 +25,8 @@ model User {
   password  String
   avatarUrl String?
 
-  role        UserRole @default(User)
-  
+  role UserRole @default(User)
+
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId String?
 
@@ -40,21 +40,21 @@ enum UserRole {
 }
 
 model Organization {
-  id          String  @id @default(uuid())
-  
+  id String @id @default(uuid())
+
   /// [LocalString]
   name        Json
   /// [LocalString]
   description Json?
   phoneNumber String?
   email       String?
-  
+
   googleMapsLink String?
   /// [SocialMediaLink]
-  socialMedia   Json[]
+  socialMedia    Json[]
 
-  slug        String  @unique
-  logoImgUrl  String?
+  slug       String  @unique
+  logoImgUrl String?
 
   users      User[]
   categories Category[]
@@ -64,63 +64,65 @@ model Organization {
   menuStructure Json[]
 
   medias Media[]
+  plan   Plan?   @relation(fields: [planId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  planId    String?
 }
 
 model Category {
-  id             String  @id @default(uuid())
-  slug           String  @unique
+  id       String  @id @default(uuid())
+  slug     String  @unique
   /// [LocalString]
-  name           Json
-  imageUrl       String?
-  
+  name     Json
+  imageUrl String?
+
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
-  
-  items          Item[]
+
+  items Item[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Item {
-  id          String @id @default(uuid())
-  slug        String @unique
+  id   String @id @default(uuid())
+  slug String @unique
 
   /// [LocalString]
   name        Json
   /// [LocalString]
   description Json?
 
-  imageUrl    String[]
-  basePrice   String
+  imageUrl  String[]
+  basePrice String
 
   /// [ItemVariantGroup]
   variantGroups Json?
-  
+
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
-  
-  category       Category? @relation(fields: [categoryId], references: [id])
-  categoryId     String?
+
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Media {
-  id        String   @id @default(uuid())
-  url       String
-  key       String   @unique
-  name      String
-  size      Int
+  id           String    @id @default(uuid())
+  url          String
+  key          String    @unique
+  name         String
+  size         Int
   originalSize Int
   originalName String
-  type      MediaType
-  entityId  String
-  
+  type         MediaType
+  entityId     String
+
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
 
@@ -133,4 +135,27 @@ enum MediaType {
   itemImage
   orgLogo
   avatarImage
+}
+
+model Plan {
+  id String @id @default(uuid())
+
+  /// [LocalString]
+  name        Json
+  /// [LocalString]
+  description Json?
+
+  price Int @default(0)
+
+  maxCategories Int @default(10)
+  maxItems      Int @default(50)
+  maxStaff      Int @default(5)
+  maxMedia      Int @default(100)
+
+  isActive Boolean @default(true)
+
+  organizations Organization[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

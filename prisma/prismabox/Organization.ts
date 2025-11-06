@@ -22,6 +22,7 @@ export const OrganizationPlain = t.Object(
     }),
     createdAt: t.Date(),
     updatedAt: t.Date(),
+    planId: __nullable__(t.String()),
   },
   { additionalProperties: false },
 );
@@ -110,6 +111,24 @@ export const OrganizationRelations = t.Object(
         { additionalProperties: false },
       ),
       { additionalProperties: false },
+    ),
+    plan: __nullable__(
+      t.Object(
+        {
+          id: t.String(),
+          name: t.Any({ description: `[LocalString]` }),
+          description: __nullable__(t.Any({ description: `[LocalString]` })),
+          price: t.Integer(),
+          maxCategories: t.Integer(),
+          maxItems: t.Integer(),
+          maxStaff: t.Integer(),
+          maxMedia: t.Integer(),
+          isActive: t.Boolean(),
+          createdAt: t.Date(),
+          updatedAt: t.Date(),
+        },
+        { additionalProperties: false },
+      ),
     ),
   },
   { additionalProperties: false },
@@ -227,6 +246,19 @@ export const OrganizationRelationsInputCreate = t.Object(
         { additionalProperties: false },
       ),
     ),
+    plan: t.Optional(
+      t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+    ),
   },
   { additionalProperties: false },
 );
@@ -334,6 +366,20 @@ export const OrganizationRelationsInputUpdate = t.Partial(
           { additionalProperties: false },
         ),
       ),
+      plan: t.Partial(
+        t.Object(
+          {
+            connect: t.Object(
+              {
+                id: t.String({ additionalProperties: false }),
+              },
+              { additionalProperties: false },
+            ),
+            disconnect: t.Boolean(),
+          },
+          { additionalProperties: false },
+        ),
+      ),
     },
     { additionalProperties: false },
   ),
@@ -363,6 +409,7 @@ export const OrganizationWhere = t.Partial(
           }),
           createdAt: t.Date(),
           updatedAt: t.Date(),
+          planId: t.String(),
         },
         { additionalProperties: false },
       ),
@@ -420,6 +467,7 @@ export const OrganizationWhereUnique = t.Recursive(
               ),
               createdAt: t.Date(),
               updatedAt: t.Date(),
+              planId: t.String(),
             },
             { additionalProperties: false },
           ),
@@ -447,8 +495,10 @@ export const OrganizationSelect = t.Partial(
       items: t.Boolean(),
       menuStructure: t.Boolean(),
       medias: t.Boolean(),
+      plan: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
+      planId: t.Boolean(),
       _count: t.Boolean(),
     },
     { additionalProperties: false },
@@ -462,6 +512,7 @@ export const OrganizationInclude = t.Partial(
       categories: t.Boolean(),
       items: t.Boolean(),
       medias: t.Boolean(),
+      plan: t.Boolean(),
       _count: t.Boolean(),
     },
     { additionalProperties: false },
@@ -505,6 +556,9 @@ export const OrganizationOrderBy = t.Partial(
         additionalProperties: false,
       }),
       updatedAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      planId: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
     },

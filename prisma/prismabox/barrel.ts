@@ -5,5 +5,6 @@ export * from "./Organization";
 export * from "./Category";
 export * from "./Item";
 export * from "./Media";
+export * from "./Plan";
 export * from "./__nullable__";
 export * from "./__transformDate__";

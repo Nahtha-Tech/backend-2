@@ -42,6 +42,7 @@ export const UserRelations = t.Object(
           }),
           createdAt: t.Date(),
           updatedAt: t.Date(),
+          planId: __nullable__(t.String()),
         },
         { additionalProperties: false },
       ),
