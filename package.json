@@ -3,13 +3,20 @@
   "version": "1.0.50",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/app.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@bogeychan/elysia-logger": "^0.1.10",
+    "@elysiajs/cors": "^1.4.0",
+    "@elysiajs/openapi": "^1.4.11",
+    "elysia": "latest",
+    "elysia-rate-limit": "^4.4.2"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "prisma-json-types-generator": "^3.6.2",
+    "prismabox": "^1.1.25",
+    "repomix": "^1.8.0"
   },
-  "module": "src/index.js"
+  "module": "src/app.js"
 }
