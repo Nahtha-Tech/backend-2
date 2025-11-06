@@ -1,17 +1,15 @@
-// src/routes/auth/service.ts
 import { Static } from "elysia";
 import {
   signinBody,
   signupBody,
-  switchOrgBody,
-  switchBranchBody,
+  updateProfileBody,
 } from "./schemas/request-body";
-import Response from "@src/utils/global-response";
-import db from "@src/utils/db";
-import ApiError from "@src/utils/global-error";
-import { ElysiaCookie, Cookie } from "elysia/dist/cookies";
-import { $Enums, User } from "@prisma/client";
-import { sendPasswordResetEmail } from "@src/utils/email";
+import db from "@/src/utils/db";
+import ApiError from "@/src/utils/global-error";
+import { Cookie } from "elysia/dist/cookies";
+import { User } from "@prisma/client";
+import { sendPasswordResetEmail } from "@/src/utils/email";
+
 export const signup = async (data: Static<typeof signupBody>) => {
   const { email, name, password, avatarUrl } = data;
 
@@ -67,38 +65,19 @@ export const signin = async (data: Static<typeof signinBody>) => {
   };
 };
 
-export const me = async (
-  data:
-    | {
-        readonly selectedOrganizationSlug: string | undefined;
-        readonly selectedBranchSlug: string | undefined;
-        readonly name: string;
-        readonly email: string;
-        readonly password: string;
-        readonly avatarUrl: string | null;
-        readonly id: string;
-        readonly role: $Enums.UserRole;
-        readonly createdAt: Date;
-        readonly updatedAt: Date;
-      }
-    | undefined,
-) => {
-  if (!data?.id) throw new ApiError("User Doesnt Exists, Unautherized call");
+export const me = async (user: User | undefined) => {
+  if (!user?.id) throw new ApiError("User Doesnt Exists, Unautherized call");
 
   return {
     success: true,
     message: "user details fetched successfully",
-    data: {
-      ...data,
-      selectedOrganizationSlug: data.selectedOrganizationSlug,
-      selectedBranchSlug: data.selectedBranchSlug,
-    },
+    data: user,
   };
 };
 
 export const signout = async (
   accessToken: Cookie<unknown>,
-  refreshToken: Cookie<unknown>,
+  refreshToken: Cookie<unknown>
 ) => {
   accessToken.remove();
   refreshToken.remove();
@@ -114,117 +93,6 @@ export const refreshTokens = async () => {
     success: true,
     message: "Refreshed tokens successfully.",
     data: null,
-  };
-};
-
-export const userExistsInThisOrg = async (
-  user: User | undefined,
-  orgSlug: string,
-) => {
-  if (!user) throw new ApiError("User Doesnt Exists, Unautherized call");
-
-  // check if user has membership inside org with this slug
-  const membership = await db.branchMembership.findFirst({
-    where: {
-      userId: user.id,
-      branch: {
-        organization: {
-          slug: orgSlug,
-        },
-      },
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  if (!membership?.id)
-    throw new ApiError("User dont have access to this organization.");
-};
-
-export const switchOrg = async (data: Static<typeof switchOrgBody>) => {
-  return {
-    success: true,
-    message: "Organization selected successfully.",
-    data: null,
-  };
-};
-
-export const userExistsInThisBranch = async (
-  user: User | undefined,
-  branchSlug: string,
-) => {
-  if (!user) throw new ApiError("User Doesnt Exists, Unautherized call");
-
-  // check if user has membership with this branch
-  const membership = await db.branchMembership.findFirst({
-    where: {
-      userId: user.id,
-      branch: {
-        slug: branchSlug,
-      },
-    },
-    select: {
-      id: true,
-    },
-  });
-  if (!membership?.id)
-    throw new ApiError("User dont have access to this branch.");
-};
-
-export const switchBranch = async (data: Static<typeof switchBranchBody>) => {
-  return {
-    success: true,
-    message: "Branch selected successfully.",
-    data: null,
-  };
-};
-
-export const getBranches = async (user: User | undefined) => {
-  if (!user) throw new ApiError("User Doesnt Exists, Unautherized call");
-
-  // get all branches that have this user inside it, then show these branches organizations, filter out duplications as well
-  const membership = await db.branchMembership.findMany({
-    where: {
-      userId: user.id,
-    },
-    select: {
-      branch: true,
-    },
-  });
-
-  const branches = membership?.map((i) => i.branch);
-
-  return {
-    success: true,
-    message: "Branches listed successfully",
-    data: branches,
-  };
-};
-
-export const getOrgs = async (user: User | undefined) => {
-  if (!user) throw new ApiError("User Doesnt Exists, Unautherized call");
-
-  // get all branches that have this user inside it, then show these branches organizations, filter out duplications as well
-  const membership = await db.branchMembership.findMany({
-    where: {
-      userId: user.id,
-    },
-    select: {
-      branch: {
-        include: {
-          organization: true,
-        },
-      },
-    },
-  });
-
-  const orgs = membership?.map((i) => i.branch.organization);
-
-  return {
-    success: true,
-    message: "Organizations listed successfully",
-    data: orgs,
   };
 };
 
@@ -247,22 +115,20 @@ export const forgotPassword = async (email: string, resetToken: string) => {
     data: null,
   };
 };
+
 export const resetPassword = async (
   userId: string,
   newPassword: string,
-  ref: string,
+  ref: string
 ) => {
-  // Check if user exists and ref matches current password hash
   const userCheck = await db.user.findUnique({
     where: { id: userId },
   });
   if (!userCheck?.id) throw new ApiError("User not found.");
 
-  // Check if token's ref matches current password (if not, password was already changed)
   if (userCheck.password.substring(0, 10) !== ref)
     throw new ApiError("Token already used or invalid.");
 
-  // Update password - this will invalidate the token
   await db.user.update({
     where: { id: userId },
     data: {
@@ -279,11 +145,10 @@ export const resetPassword = async (
 
 export const updateProfile = async (
   user: User | undefined,
-  data: Static<typeof updateProfileBody>,
+  data: Static<typeof updateProfileBody>
 ) => {
   if (!user) throw new ApiError("User Doesnt Exists, Unautherized call");
 
-  // Check if email is being updated and if it already exists
   if (data.email && data.email !== user.email) {
     const existingUser = await db.user.findUnique({
       where: { email: data.email },
@@ -294,30 +159,18 @@ export const updateProfile = async (
     }
   }
 
-  // Prepare update data
   const updateData: any = {};
   if (data.name) updateData.name = data.name;
   if (data.email) updateData.email = data.email;
   if (data.avatarUrl !== undefined)
     updateData.avatarUrl = data.avatarUrl || null;
-  if (data.phone !== undefined) updateData.phone = data.phone || null;
   if (data.password) {
     updateData.password = await Bun.password.hash(data.password);
   }
 
-  // Update user
   const updatedUser = await db.user.update({
     where: { id: user.id },
     data: updateData,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatarUrl: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   });
 
   if (!updatedUser?.id) {

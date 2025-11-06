@@ -1,6 +1,6 @@
 import { t } from "elysia";
 
-export const signupBody = t.Object({
+export const createUserBody = t.Object({
   name: t.String({
     minLength: 2,
     maxLength: 50,
@@ -23,59 +23,31 @@ export const signupBody = t.Object({
       format: "uri",
       description: "User avatar URL",
       examples: ["https://example.com/avatar.jpg"],
-    })
+    }),
+  ),
+  role: t.Optional(
+    t.Union([t.Literal("Admin"), t.Literal("User")], {
+      description: "User role",
+      default: "User",
+    }),
   ),
 });
 
-export const forgotPasswordBodySchema = t.Object({
-  email: t.String({
-    format: "email",
-    description: "Email address to send reset link",
-    examples: ["omerchetin19@gmail.com"],
-  }),
-});
-
-export const resetPasswordBodySchema = t.Object({
-  token: t.String({
-    description: "Password reset token from email",
-  }),
-  newPassword: t.String({
-    minLength: 6,
-    maxLength: 100,
-    description: "New password (6-100 characters)",
-    examples: ["newpassword123"],
-  }),
-});
-
-export const signinBody = t.Object({
-  email: t.String({
-    format: "email",
-    description: "Registered email",
-    examples: ["omerchetin19@gmail.com"],
-  }),
-  password: t.String({
-    minLength: 6,
-    maxLength: 100,
-    description: "User password",
-    examples: ["123456789"],
-  }),
-});
-
-export const updateProfileBody = t.Object({
+export const updateUserBody = t.Object({
   name: t.Optional(
     t.String({
       minLength: 2,
       maxLength: 50,
       description: "User full name",
       examples: ["Omar Chatin"],
-    })
+    }),
   ),
   email: t.Optional(
     t.String({
       format: "email",
       description: "User email address",
       examples: ["omerchetin19@gmail.com"],
-    })
+    }),
   ),
   password: t.Optional(
     t.String({
@@ -83,17 +55,18 @@ export const updateProfileBody = t.Object({
       maxLength: 100,
       description: "New password (6–100 characters)",
       examples: ["123456789"],
-    })
+    }),
   ),
   avatarUrl: t.Optional(
     t.String({
       format: "uri",
       description: "User avatar URL",
       examples: ["https://example.com/avatar.jpg"],
-    })
+    }),
+  ),
+  role: t.Optional(
+    t.Union([t.Literal("Admin"), t.Literal("User")], {
+      description: "User role",
+    }),
   ),
 });
-
-export type UpdateProfileBody = typeof updateProfileBody.static;
-export type SignupBody = typeof signupBody.static;
-export type SigninBody = typeof signinBody.static;

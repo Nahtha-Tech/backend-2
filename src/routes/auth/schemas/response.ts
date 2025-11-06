@@ -1,8 +1,6 @@
 import { t } from "elysia";
 import { UserRole } from "@prisma/client";
-import { BranchPlain } from "prisma/prismabox/Branch";
-import { OrganizationPlain } from "prisma/prismabox/Organization";
-import { UserPlain } from "prisma/prismabox/User";
+
 const signinResponse = t.Object({
   id: t.String(),
   email: t.String(),
@@ -35,9 +33,8 @@ const getMeResponse = t.Object({
   }),
   createdAt: t.Date(),
   updatedAt: t.Date(),
-  selectedOrganizationSlug: t.Optional(t.String()),
-  selectedBranchSlug: t.Optional(t.String()),
 });
+
 const updateProfileResponse = t.Object({
   id: t.String(),
   name: t.String(),
@@ -52,19 +49,11 @@ const updateProfileResponse = t.Object({
 
 const signoutResponse = t.Null();
 const refreshTokensResponse = t.Null();
-const switchOrgResponse = t.Null();
-const switchBranchResponse = t.Null();
-const listBranchesResponse = t.Array(BranchPlain);
-const listOrgsResponse = t.Array(OrganizationPlain);
 
 export {
   signinResponse,
   signoutResponse,
   refreshTokensResponse,
-  switchOrgResponse,
-  switchBranchResponse,
-  listBranchesResponse,
-  listOrgsResponse,
   getMeResponse,
   signupResponse,
   updateProfileResponse,

@@ -43,30 +43,6 @@ export const meDocs: DocumentDecoration = {
   operationId: "getCurrentUser",
 };
 
-export const switchOrgDocs: DocumentDecoration = {
-  summary: "Switch organization",
-  description: "Change the active organization context for current user",
-  operationId: "switchMyOrganization",
-};
-
-export const switchBranchDocs: DocumentDecoration = {
-  summary: "Switch branch",
-  description: "Change the active branch context for current user",
-  operationId: "switchMyBranch",
-};
-
-export const branchesDocs: DocumentDecoration = {
-  summary: "List branches",
-  description: "List of branches linked to the current user.",
-  operationId: "listMyBranches",
-};
-
-export const orgsDocs: DocumentDecoration = {
-  summary: "List organizations",
-  description: "List of organizations linked to the current user",
-  operationId: "listMyOrganizations",
-};
-
 export const updateProfileDocs: DocumentDecoration = {
   summary: "Update profile",
   description: "Update current user's profile information",
