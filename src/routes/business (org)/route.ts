@@ -4,6 +4,7 @@ import {
   updateOrgBodySchema,
 } from "./schemas/request-body";
 import {
+  businessOrgListPaymentsDocs,
   getMenuStructureDocs,
   getOrgDocs,
   updateMenuStructureDocs,
@@ -13,6 +14,7 @@ import Response from "@/src/utils/global-response";
 import {
   getMenuStructureResponseSchema,
   getOrgResponseSchema,
+  listPaymentsResponseSchema,
   updateMenuStructureResponseSchema,
   updateOrgResponseSchema,
 } from "./schemas/response";
@@ -20,10 +22,14 @@ import { businessPlugin } from "@/src/plugins/auth-plugin";
 import {
   getMenuStructureService,
   getOrgService,
+  listPaymentsService,
   updateMenuStructureService,
   updateOrgService,
 } from "./service";
-import { getMenuStructureQueryParamsSchema } from "./schemas/query-params";
+import {
+  getMenuStructureQueryParamsSchema,
+  listPaymentsQueryParamsSchema,
+} from "./schemas/query-params";
 
 export const businessOrgRoutes = new Elysia({
   prefix: "/business/org",
@@ -71,5 +77,16 @@ export const businessOrgRoutes = new Elysia({
       detail: updateMenuStructureDocs,
       body: updateMenuStructureBodySchema,
       response: Response(updateMenuStructureResponseSchema),
+    }
+  )
+  .get(
+    "/payments",
+    async ({ query, organizationId }) => {
+      return await listPaymentsService(organizationId, query);
+    },
+    {
+      detail: businessOrgListPaymentsDocs,
+      query: listPaymentsQueryParamsSchema,
+      response: Response(listPaymentsResponseSchema),
     }
   );

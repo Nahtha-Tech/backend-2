@@ -4,25 +4,19 @@ import { __transformDate__ } from "./__transformDate__";
 
 import { __nullable__ } from "./__nullable__";
 
-export const MediaPlain = t.Object(
+export const PaymentPlain = t.Object(
   {
     id: t.String(),
-    url: t.String(),
-    key: t.String(),
-    name: t.String(),
-    size: t.Integer(),
-    originalSize: t.Integer(),
-    originalName: t.String(),
-    type: t.Union(
-      [
-        t.Literal("categoryImage"),
-        t.Literal("itemImage"),
-        t.Literal("orgLogo"),
-        t.Literal("avatarImage"),
-      ],
-      { additionalProperties: false },
-    ),
-    entityId: t.String(),
+    amount: t.Integer(),
+    paidAt: t.Date(),
+    periodStart: t.Date(),
+    periodEnd: t.Date(),
+    notes: __nullable__(t.String()),
+    imageUrl: __nullable__(t.String()),
+    waylReferenceId: __nullable__(t.String()),
+    waylLinkId: __nullable__(t.String()),
+    waylStatus: __nullable__(t.String()),
+    isPaid: t.Boolean(),
     organizationId: t.String(),
     createdAt: t.Date(),
     updatedAt: t.Date(),
@@ -30,7 +24,7 @@ export const MediaPlain = t.Object(
   { additionalProperties: false },
 );
 
-export const MediaRelations = t.Object(
+export const PaymentRelations = t.Object(
   {
     organization: t.Object(
       {
@@ -68,51 +62,33 @@ export const MediaRelations = t.Object(
   { additionalProperties: false },
 );
 
-export const MediaPlainInputCreate = t.Object(
+export const PaymentPlainInputCreate = t.Object(
   {
-    url: t.String(),
-    key: t.String(),
-    name: t.String(),
-    size: t.Integer(),
-    originalSize: t.Integer(),
-    originalName: t.String(),
-    type: t.Union(
-      [
-        t.Literal("categoryImage"),
-        t.Literal("itemImage"),
-        t.Literal("orgLogo"),
-        t.Literal("avatarImage"),
-      ],
-      { additionalProperties: false },
-    ),
+    amount: t.Integer(),
+    paidAt: t.Optional(t.Date()),
+    periodStart: t.Date(),
+    periodEnd: t.Date(),
+    notes: t.Optional(__nullable__(t.String())),
+    imageUrl: t.Optional(__nullable__(t.String())),
+    waylStatus: t.Optional(__nullable__(t.String())),
   },
   { additionalProperties: false },
 );
 
-export const MediaPlainInputUpdate = t.Object(
+export const PaymentPlainInputUpdate = t.Object(
   {
-    url: t.Optional(t.String()),
-    key: t.Optional(t.String()),
-    name: t.Optional(t.String()),
-    size: t.Optional(t.Integer()),
-    originalSize: t.Optional(t.Integer()),
-    originalName: t.Optional(t.String()),
-    type: t.Optional(
-      t.Union(
-        [
-          t.Literal("categoryImage"),
-          t.Literal("itemImage"),
-          t.Literal("orgLogo"),
-          t.Literal("avatarImage"),
-        ],
-        { additionalProperties: false },
-      ),
-    ),
+    amount: t.Optional(t.Integer()),
+    paidAt: t.Optional(t.Date()),
+    periodStart: t.Optional(t.Date()),
+    periodEnd: t.Optional(t.Date()),
+    notes: t.Optional(__nullable__(t.String())),
+    imageUrl: t.Optional(__nullable__(t.String())),
+    waylStatus: t.Optional(__nullable__(t.String())),
   },
   { additionalProperties: false },
 );
 
-export const MediaRelationsInputCreate = t.Object(
+export const PaymentRelationsInputCreate = t.Object(
   {
     organization: t.Object(
       {
@@ -129,7 +105,7 @@ export const MediaRelationsInputCreate = t.Object(
   { additionalProperties: false },
 );
 
-export const MediaRelationsInputUpdate = t.Partial(
+export const PaymentRelationsInputUpdate = t.Partial(
   t.Object(
     {
       organization: t.Object(
@@ -148,7 +124,7 @@ export const MediaRelationsInputUpdate = t.Partial(
   ),
 );
 
-export const MediaWhere = t.Partial(
+export const PaymentWhere = t.Partial(
   t.Recursive(
     (Self) =>
       t.Object(
@@ -157,46 +133,49 @@ export const MediaWhere = t.Partial(
           NOT: t.Union([Self, t.Array(Self, { additionalProperties: false })]),
           OR: t.Array(Self, { additionalProperties: false }),
           id: t.String(),
-          url: t.String(),
-          key: t.String(),
-          name: t.String(),
-          size: t.Integer(),
-          originalSize: t.Integer(),
-          originalName: t.String(),
-          type: t.Union(
-            [
-              t.Literal("categoryImage"),
-              t.Literal("itemImage"),
-              t.Literal("orgLogo"),
-              t.Literal("avatarImage"),
-            ],
-            { additionalProperties: false },
-          ),
-          entityId: t.String(),
+          amount: t.Integer(),
+          paidAt: t.Date(),
+          periodStart: t.Date(),
+          periodEnd: t.Date(),
+          notes: t.String(),
+          imageUrl: t.String(),
+          waylReferenceId: t.String(),
+          waylLinkId: t.String(),
+          waylStatus: t.String(),
+          isPaid: t.Boolean(),
           organizationId: t.String(),
           createdAt: t.Date(),
           updatedAt: t.Date(),
         },
         { additionalProperties: false },
       ),
-    { $id: "Media" },
+    { $id: "Payment" },
   ),
 );
 
-export const MediaWhereUnique = t.Recursive(
+export const PaymentWhereUnique = t.Recursive(
   (Self) =>
     t.Intersect(
       [
         t.Partial(
           t.Object(
-            { id: t.String(), key: t.String() },
+            {
+              id: t.String(),
+              waylReferenceId: t.String(),
+              waylLinkId: t.String(),
+            },
             { additionalProperties: false },
           ),
           { additionalProperties: false },
         ),
-        t.Union([t.Object({ id: t.String() }), t.Object({ key: t.String() })], {
-          additionalProperties: false,
-        }),
+        t.Union(
+          [
+            t.Object({ id: t.String() }),
+            t.Object({ waylReferenceId: t.String() }),
+            t.Object({ waylLinkId: t.String() }),
+          ],
+          { additionalProperties: false },
+        ),
         t.Partial(
           t.Object({
             AND: t.Union([
@@ -215,22 +194,16 @@ export const MediaWhereUnique = t.Recursive(
           t.Object(
             {
               id: t.String(),
-              url: t.String(),
-              key: t.String(),
-              name: t.String(),
-              size: t.Integer(),
-              originalSize: t.Integer(),
-              originalName: t.String(),
-              type: t.Union(
-                [
-                  t.Literal("categoryImage"),
-                  t.Literal("itemImage"),
-                  t.Literal("orgLogo"),
-                  t.Literal("avatarImage"),
-                ],
-                { additionalProperties: false },
-              ),
-              entityId: t.String(),
+              amount: t.Integer(),
+              paidAt: t.Date(),
+              periodStart: t.Date(),
+              periodEnd: t.Date(),
+              notes: t.String(),
+              imageUrl: t.String(),
+              waylReferenceId: t.String(),
+              waylLinkId: t.String(),
+              waylStatus: t.String(),
+              isPaid: t.Boolean(),
               organizationId: t.String(),
               createdAt: t.Date(),
               updatedAt: t.Date(),
@@ -241,21 +214,23 @@ export const MediaWhereUnique = t.Recursive(
       ],
       { additionalProperties: false },
     ),
-  { $id: "Media" },
+  { $id: "Payment" },
 );
 
-export const MediaSelect = t.Partial(
+export const PaymentSelect = t.Partial(
   t.Object(
     {
       id: t.Boolean(),
-      url: t.Boolean(),
-      key: t.Boolean(),
-      name: t.Boolean(),
-      size: t.Boolean(),
-      originalSize: t.Boolean(),
-      originalName: t.Boolean(),
-      type: t.Boolean(),
-      entityId: t.Boolean(),
+      amount: t.Boolean(),
+      paidAt: t.Boolean(),
+      periodStart: t.Boolean(),
+      periodEnd: t.Boolean(),
+      notes: t.Boolean(),
+      imageUrl: t.Boolean(),
+      waylReferenceId: t.Boolean(),
+      waylLinkId: t.Boolean(),
+      waylStatus: t.Boolean(),
+      isPaid: t.Boolean(),
       organization: t.Boolean(),
       organizationId: t.Boolean(),
       createdAt: t.Boolean(),
@@ -266,38 +241,47 @@ export const MediaSelect = t.Partial(
   ),
 );
 
-export const MediaInclude = t.Partial(
+export const PaymentInclude = t.Partial(
   t.Object(
-    { type: t.Boolean(), organization: t.Boolean(), _count: t.Boolean() },
+    { organization: t.Boolean(), _count: t.Boolean() },
     { additionalProperties: false },
   ),
 );
 
-export const MediaOrderBy = t.Partial(
+export const PaymentOrderBy = t.Partial(
   t.Object(
     {
       id: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      url: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      amount: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      key: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      paidAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      name: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      periodStart: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      size: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      periodEnd: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      originalSize: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      notes: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      originalName: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      imageUrl: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      entityId: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      waylReferenceId: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      waylLinkId: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      waylStatus: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      isPaid: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
       organizationId: t.Union([t.Literal("asc"), t.Literal("desc")], {
@@ -314,16 +298,16 @@ export const MediaOrderBy = t.Partial(
   ),
 );
 
-export const Media = t.Composite([MediaPlain, MediaRelations], {
+export const Payment = t.Composite([PaymentPlain, PaymentRelations], {
   additionalProperties: false,
 });
 
-export const MediaInputCreate = t.Composite(
-  [MediaPlainInputCreate, MediaRelationsInputCreate],
+export const PaymentInputCreate = t.Composite(
+  [PaymentPlainInputCreate, PaymentRelationsInputCreate],
   { additionalProperties: false },
 );
 
-export const MediaInputUpdate = t.Composite(
-  [MediaPlainInputUpdate, MediaRelationsInputUpdate],
+export const PaymentInputUpdate = t.Composite(
+  [PaymentPlainInputUpdate, PaymentRelationsInputUpdate],
   { additionalProperties: false },
 );

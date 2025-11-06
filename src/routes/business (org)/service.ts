@@ -5,7 +5,7 @@ import {
   updateOrgBodySchema,
 } from "./schemas/request-body";
 import ApiError from "@/src/utils/global-error";
-import { getMenuStructureQueryParamsSchema } from "./schemas/query-params";
+import { getMenuStructureQueryParamsSchema, listPaymentsQueryParamsSchema } from "./schemas/query-params";
 
 export const getOrgService = async (organizationId: string) => {
   const org = await db.organization.findUnique({
@@ -172,5 +172,54 @@ export const updateMenuStructureService = async (
     success: true,
     message: "Menu structure updated successfully",
     data: updated.menuStructure,
+  };
+};
+
+export const listPaymentsService = async (
+  organizationId: string,
+  params: Static<typeof listPaymentsQueryParamsSchema>
+) => {
+  const page = params.page || 1;
+  const limit = params.limit || 10;
+  const skip = (page - 1) * limit;
+
+  const where = {
+    organizationId,
+    ...(params.isPaid !== undefined && { isPaid: params.isPaid }),
+  };
+
+  const [payments, total] = await Promise.all([
+    db.payment.findMany({
+      where,
+      select: {
+        id: true,
+        amount: true,
+        paidAt: true,
+        periodStart: true,
+        periodEnd: true,
+        notes: true,
+        waylStatus: true,
+        isPaid: true,
+        createdAt: true,
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    db.payment.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    success: true,
+    message: "Payment history fetched successfully",
+    data: {
+      total,
+      page,
+      limit,
+      totalPages,
+      payments,
+    },
   };
 };

@@ -65,3 +65,30 @@ export const adminDeleteOrgQueryParamsSchema = t.Object({
     })
   ),
 });
+
+export const adminListPaymentsQueryParamsSchema = t.Object({
+  organizationId: t.String({
+    format: "uuid",
+    description: "Organization ID to get payments for",
+  }),
+  page: t.Optional(
+    t.Number({
+      minimum: 1,
+      default: 1,
+      description: "Page number",
+    })
+  ),
+  limit: t.Optional(
+    t.Number({
+      minimum: 1,
+      maximum: 100,
+      default: 10,
+      description: "Items per page",
+    })
+  ),
+  isPaid: t.Optional(
+    t.Boolean({
+      description: "Filter by payment status",
+    })
+  ),
+});

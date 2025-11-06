@@ -40,6 +40,16 @@ export const UserRelations = t.Object(
           menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
             additionalProperties: false,
           }),
+          subscriptionStatus: t.Union(
+            [
+              t.Literal("Active"),
+              t.Literal("Inactive"),
+              t.Literal("Trial"),
+              t.Literal("Expired"),
+            ],
+            { additionalProperties: false },
+          ),
+          subscriptionEndsAt: __nullable__(t.Date()),
           createdAt: t.Date(),
           updatedAt: t.Date(),
           planId: __nullable__(t.String()),

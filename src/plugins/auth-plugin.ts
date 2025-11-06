@@ -46,13 +46,31 @@ export const adminCheckPlugin = (app: Elysia) =>
   });
 
 export const businessPlugin = (app: Elysia) =>
-  app.use(authPlugin).derive(async ({ user }) => {
-    if (!user?.id) throw new ApiError("Unauthorized.", 401);
+  app
+    .use(authPlugin)
 
-    if (!user.organizationId)
-      throw new ApiError("User not associated with any organization.");
+    .derive(async ({ user }) => {
+      if (!user?.id) throw new ApiError("Unauthorized.", 401);
 
-    return {
-      organizationId: user.organizationId,
-    };
-  });
+      if (!user.organizationId)
+        throw new ApiError("User not associated with any organization.");
+
+      const org = await db.organization.findUnique({
+        where: { id: user.organizationId },
+        select: {
+          subscriptionStatus: true,
+          subscriptionEndsAt: true,
+        },
+      });
+
+      if (
+        org?.subscriptionStatus !== "Active" ||
+        (org.subscriptionEndsAt && org.subscriptionEndsAt < new Date())
+      ) {
+        throw new ApiError("Subscription inactive or expired", 402);
+      }
+
+      return {
+        organizationId: user.organizationId,
+      };
+    });

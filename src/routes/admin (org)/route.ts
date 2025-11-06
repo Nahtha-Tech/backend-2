@@ -6,11 +6,13 @@ import {
 import {
   adminDeleteOrgQueryParamsSchema,
   adminListOrgsQueryParamsSchema,
+  adminListPaymentsQueryParamsSchema,
   orgSelectQueryParamsSchema,
 } from "./schemas/query-params";
 import {
   adminCreateOrgDocs,
   adminDeleteOrgDocs,
+  adminListOrgPaymentsDocs,
   adminListOrgsDocs,
   adminShowOrgDocs,
   adminUpdateOrgDocs,
@@ -20,16 +22,22 @@ import {
   adminCreateOrgResponseSchema,
   adminDeleteOrgResponseSchema,
   adminListOrgsResponseSchema,
+  adminListPaymentsResponseSchema,
   adminShowOrgResponseSchema,
   adminUpdateOrgResponseSchema,
+  CreatePaymentLinkResponseSchema,
+  waylWebhookRouteSchema,
 } from "./schemas/response";
 import { adminCheckPlugin } from "@/src/plugins/auth-plugin";
 import {
   adminCreateOrgService,
+  adminCreatePaymentLinkService,
   adminDeleteOrgService,
   adminListAllOrgsService,
+  adminListPaymentsService,
   adminShowOrgService,
   adminUpdateOrgService,
+  handleWaylWebhookService,
 } from "./service";
 
 export const adminOrgRoutes = new Elysia({
@@ -93,4 +101,42 @@ export const adminOrgRoutes = new Elysia({
       detail: adminShowOrgDocs,
       response: Response(adminShowOrgResponseSchema),
     }
+  )
+  .post(
+    "/:orgId/create-payment-link",
+    async ({ params }) => {
+      return await adminCreatePaymentLinkService(params.orgId);
+    },
+    {
+      detail: {
+        summary: "Create payment link",
+        description: "Generate Wayl payment link",
+        operationId: "adminCreatePaymentLink",
+      },
+      response: Response(CreatePaymentLinkResponseSchema),
+    }
+  )
+  .get(
+    "/payments",
+    async ({ query }) => {
+      return await adminListPaymentsService(query);
+    },
+    {
+      detail: adminListOrgPaymentsDocs,
+      query: adminListPaymentsQueryParamsSchema,
+      response: Response(adminListPaymentsResponseSchema),
+    }
   );
+
+export const waylWebhookRoute = new Elysia({
+  prefix: "/webhooks",
+  tags: ["Webhooks"],
+}).post(
+  "/wayl",
+  async ({ body }) => {
+    return await handleWaylWebhookService(body);
+  },
+  {
+    response: Response(waylWebhookRouteSchema),
+  }
+);

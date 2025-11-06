@@ -29,3 +29,9 @@ export const adminShowOrgDocs: DocumentDecoration = {
   description: "Show organization details",
   operationId: "adminShowOrg",
 };
+
+export const adminListOrgPaymentsDocs: DocumentDecoration = {
+  summary: "List organization payments",
+  description: "Get payment history for an organization",
+  operationId: "adminListOrgPayments",
+};

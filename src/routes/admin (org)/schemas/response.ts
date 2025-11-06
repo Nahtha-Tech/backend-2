@@ -66,6 +66,38 @@ export const adminListOrgsResponseSchema = t.Object({
   orgs: t.Array(OrgResponseSchema),
 });
 
+export const CreatePaymentLinkResponseSchema = t.Object({
+  paymentId: t.String(),
+  paymentUrl: t.String(),
+  amount: t.Number(),
+  currency: t.String(),
+  expiresAt: t.Date(),
+});
+
+const PaymentResponseSchema = t.Object({
+  id: t.String(),
+  amount: t.Number(),
+  paidAt: t.Date(),
+  periodStart: t.Date(),
+  periodEnd: t.Date(),
+  notes: t.Nullable(t.String()),
+  imageUrl: t.Nullable(t.String()),
+  waylReferenceId: t.Nullable(t.String()),
+  waylStatus: t.Nullable(t.String()),
+  isPaid: t.Boolean(),
+  createdAt: t.Date(),
+  updatedAt: t.Date(),
+});
+
+export const adminListPaymentsResponseSchema = t.Object({
+  total: t.Number(),
+  page: t.Number(),
+  limit: t.Number(),
+  totalPages: t.Number(),
+  payments: t.Array(PaymentResponseSchema),
+});
+
+export const waylWebhookRouteSchema = t.Null();
 export const adminCreateOrgResponseSchema = OrgResponseSchema;
 export const adminUpdateOrgResponseSchema = OrgResponseSchema;
 export const adminDeleteOrgResponseSchema = t.Null();

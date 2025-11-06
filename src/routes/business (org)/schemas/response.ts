@@ -66,8 +66,27 @@ const MenuNodeSchema = t.Object({
   children: t.Optional(t.Array(t.Any())),
 });
 
+const PaymentResponseSchema = t.Object({
+  id: t.String(),
+  amount: t.Number(),
+  paidAt: t.Date(),
+  periodStart: t.Date(),
+  periodEnd: t.Date(),
+  notes: t.Nullable(t.String()),
+  waylStatus: t.Nullable(t.String()),
+  isPaid: t.Boolean(),
+  createdAt: t.Date(),
+});
+
+export const listPaymentsResponseSchema = t.Object({
+  total: t.Number(),
+  page: t.Number(),
+  limit: t.Number(),
+  totalPages: t.Number(),
+  payments: t.Array(PaymentResponseSchema),
+});
+
 export const getMenuStructureResponseSchema = t.Array(MenuNodeSchema);
 export const updateMenuStructureResponseSchema = t.Array(MenuNodeSchema);
-
 export const getOrgResponseSchema = OrgResponseSchema;
 export const updateOrgResponseSchema = OrgResponseSchema;

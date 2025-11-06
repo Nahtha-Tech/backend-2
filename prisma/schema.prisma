@@ -65,6 +65,10 @@ model Organization {
 
   medias Media[]
   plan   Plan?   @relation(fields: [planId], references: [id])
+  payments Payment[]
+  
+  subscriptionStatus SubscriptionStatus @default(Inactive)
+  subscriptionEndsAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -158,4 +162,39 @@ model Plan {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+
+model Payment {
+  id     String  @id @default(uuid())
+  
+  amount Int
+  paidAt DateTime @default(now())
+  
+  periodStart DateTime
+  periodEnd   DateTime
+  
+  notes    String?
+  imageUrl String?
+  
+  waylReferenceId String? @unique
+  waylLinkId      String? @unique
+  waylStatus      String? // Pending, Completed, Cancelled
+  isPaid          Boolean @default(false)
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+enum SubscriptionStatus {
+  Active
+  Inactive
+  Trial
+  Expired
 }

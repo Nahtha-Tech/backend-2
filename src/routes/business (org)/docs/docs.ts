@@ -24,3 +24,9 @@ export const updateMenuStructureDocs: DocumentDecoration = {
     "Update the complete menu structure including ordering of categories and items",
   operationId: "updateMenuStructure",
 };
+
+export const businessOrgListPaymentsDocs: DocumentDecoration = {
+  summary: "List payments",
+  description: "Get payment history for current organization",
+  operationId: "listOrgPayments",
+};
