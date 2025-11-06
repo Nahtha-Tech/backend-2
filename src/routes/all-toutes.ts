@@ -5,6 +5,7 @@ import { adminOrgRoutes } from "./admin (org)/route";
 import { businessCategoryRoutes } from "./business (category)/route";
 import { businessItemRoutes } from "./business (items)/route";
 import { mediaRoutes } from "./media/route";
+import { businessOrgRoutes } from "./business (org)/route";
 
 const AllRoutes = new Elysia()
   .use(authRoutes)
@@ -12,6 +13,7 @@ const AllRoutes = new Elysia()
   .use(adminOrgRoutes)
   .use(businessCategoryRoutes)
   .use(businessItemRoutes)
-  .use(mediaRoutes);
+  .use(mediaRoutes)
+  .use(businessOrgRoutes);
 
 export default AllRoutes;
