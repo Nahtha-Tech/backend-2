@@ -28,15 +28,6 @@ const SocialMediaLinkSchema = t.Object({
   }),
 });
 
-const StructureNodeSchema: any = t.Object({
-  type: t.Union([t.Literal("category"), t.Literal("item")]),
-  id: t.String({
-    format: "uuid",
-    description: "Category or Item ID",
-  }),
-  children: t.Optional(t.Array(t.Any())),
-});
-
 export const updateOrgBodySchema = t.Object({
   name: t.Optional(LocalStringSchema),
   description: t.Optional(LocalStringSchema),
@@ -75,7 +66,15 @@ export const updateOrgBodySchema = t.Object({
 });
 
 export const updateMenuStructureBodySchema = t.Object({
-  menuStructure: t.Array(StructureNodeSchema, {
-    description: "Complete menu structure with categories and items",
-  }),
+  menuStructure: t.Array(
+    t.Object({
+      type: t.Union([t.Literal("category"), t.Literal("item")]),
+      id: t.String({ format: "uuid" }),
+      order: t.Number({ minimum: 0 }),
+      children: t.Optional(t.Array(t.Any())),
+    }),
+    {
+      description: "Complete menu structure with ordering",
+    }
+  ),
 });

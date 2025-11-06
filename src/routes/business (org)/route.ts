@@ -30,7 +30,6 @@ export const businessOrgRoutes = new Elysia({
   tags: ["business (Org)"],
 })
   .use(businessPlugin)
-
   .get(
     "/",
     async ({ organizationId }) => {
@@ -64,13 +63,13 @@ export const businessOrgRoutes = new Elysia({
     }
   )
   .put(
-    "/menu-structure",
+    "/structure",
     async ({ body, organizationId }) => {
       return await updateMenuStructureService(organizationId, body);
     },
     {
-      body: updateMenuStructureBodySchema,
       detail: updateMenuStructureDocs,
+      body: updateMenuStructureBodySchema,
       response: Response(updateMenuStructureResponseSchema),
     }
   );

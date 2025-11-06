@@ -76,7 +76,6 @@ export const getMenuStructureService = async (
     };
   }
 
-  // Extract all IDs
   const categoryIds = menuStructure
     .filter((node) => node.type === "category")
     .map((node) => node.id);
@@ -86,7 +85,6 @@ export const getMenuStructureService = async (
     .filter((child) => child.type === "item")
     .map((child) => child.id);
 
-  // Fetch in parallel
   const [categories, items] = await Promise.all([
     db.category.findMany({
       where: { id: { in: categoryIds }, organizationId },
@@ -96,11 +94,9 @@ export const getMenuStructureService = async (
     }),
   ]);
 
-  // Map for quick lookup
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
   const itemMap = Object.fromEntries(items.map((i) => [i.id, i]));
 
-  // Populate structure
   const populatedStructure = menuStructure.map((node) => ({
     ...node,
     data: node.type === "category" ? categoryMap[node.id] || null : null,
@@ -121,62 +117,58 @@ export const updateMenuStructureService = async (
   organizationId: string,
   body: Static<typeof updateMenuStructureBodySchema>
 ) => {
-  const categoryIds = new Set<string>();
-  const itemIds = new Set<string>();
+  const org = await db.organization.findUnique({
+    where: { id: organizationId },
+  });
 
-  const validateStructure = (nodes: any[]): void => {
-    for (const node of nodes) {
-      if (node.type === "category") {
-        categoryIds.add(node.id);
-      } else if (node.type === "item") {
-        itemIds.add(node.id);
-      }
-      if (node.children) {
-        validateStructure(node.children);
-      }
-    }
-  };
+  if (!org) throw new ApiError("Organization not found");
 
-  validateStructure(body.menuStructure);
+  const categoryIds = body.menuStructure
+    .filter((node) => node.type === "category")
+    .map((node) => node.id);
 
-  const [categories, items] = await Promise.all([
-    db.category.findMany({
-      where: {
-        id: { in: Array.from(categoryIds) },
-        organizationId,
-      },
-      select: { id: true },
-    }),
-    db.item.findMany({
-      where: {
-        id: { in: Array.from(itemIds) },
-        organizationId,
-      },
-      select: { id: true },
-    }),
-  ]);
+  const uniqueCategoryIds = [...new Set(categoryIds)];
 
-  if (categories.length !== categoryIds.size) {
+  const categories = await db.category.findMany({
+    where: { id: { in: uniqueCategoryIds }, organizationId },
+    select: { id: true },
+  });
+
+  if (categories.length !== uniqueCategoryIds.length) {
     throw new ApiError(
-      "Some categories do not exist or don't belong to this organization"
+      "Some categories do not exist or do not belong to this organization"
     );
   }
 
-  if (items.length !== itemIds.size) {
+  const itemIds = body.menuStructure
+    .flatMap((node) => node.children || [])
+    .filter((child) => child.type === "item")
+    .map((child) => child.id);
+
+  const uniqueItemIds = [...new Set(itemIds)];
+
+  const items = await db.item.findMany({
+    where: { id: { in: uniqueItemIds }, organizationId },
+    select: { id: true },
+  });
+
+  if (items.length !== uniqueItemIds.length) {
     throw new ApiError(
-      "Some items do not exist or don't belong to this organization"
+      "Some items do not exist or do not belong to this organization"
     );
   }
 
   const updated = await db.organization.update({
     where: { id: organizationId },
-    data: { menuStructure: body.menuStructure as any },
+    data: {
+      menuStructure: body.menuStructure as any,
+    },
     select: { menuStructure: true },
   });
 
   return {
     success: true,
     message: "Menu structure updated successfully",
-    data: updated.menuStructure as menuStructure,
+    data: updated.menuStructure,
   };
 };

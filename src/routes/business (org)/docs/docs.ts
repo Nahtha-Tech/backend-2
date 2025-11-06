@@ -20,6 +20,7 @@ export const getMenuStructureDocs: DocumentDecoration = {
 
 export const updateMenuStructureDocs: DocumentDecoration = {
   summary: "Update menu structure",
-  description: "Update the menu structure (reorder categories and items)",
+  description:
+    "Update the complete menu structure including ordering of categories and items",
   operationId: "updateMenuStructure",
 };

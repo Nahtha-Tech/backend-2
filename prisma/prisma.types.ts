@@ -42,6 +42,7 @@ declare global {
   type structureNode = {
     type: "category" | "item";
     id: string;
+    order: number;
     children?: structureNode[];
   };
 

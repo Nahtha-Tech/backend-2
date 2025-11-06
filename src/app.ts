@@ -6,19 +6,15 @@ import { logger } from "@bogeychan/elysia-logger";
 import { cors } from "@elysiajs/cors";
 
 const app = new Elysia()
+
   .use(
     cors({
       origin: true,
       credentials: true,
     })
   )
-  .use(logger({}))
-  .use(
-    rateLimit({
-      max: 50,
-      duration: 60000,
-    })
-  )
+  // .use(logger({}))
+
   .onError(({ code, error }) => {
     if (code === "VALIDATION") {
       return {
@@ -37,6 +33,13 @@ const app = new Elysia()
       };
     }
   })
+  .use(
+    rateLimit({
+      max: 50,
+      duration: 60000,
+    })
+  )
+  .use(AllRoutes)
   .use(
     openapi({
       documentation: {
@@ -57,8 +60,6 @@ const app = new Elysia()
       specPath: "/docs/json",
     })
   )
-
-  .use(AllRoutes)
   .listen(process.env.PORT ?? 4321);
 
 console.log(
