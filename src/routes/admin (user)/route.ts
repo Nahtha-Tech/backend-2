@@ -1,33 +1,30 @@
 import Elysia from "elysia";
-import { createUserBody, updateUserBody } from "./schemas/request-body";
+import { createUserBodySchema, updateUserBodySchema } from "./schemas/request-body";
 import {
-  adminDeleteUserQueryParams,
+  adminDeleteUserQueryParamsSchema,
   adminListUsersQueryParamsSchema,
-  userSelectQueryParams,
+  userSelectQueryParamsSchema,
 } from "./schemas/query-params";
 import {
-  adminCreateUserDoc,
-  adminDeleteUserDoc,
-  adminListUserBranchesDoc,
-  adminListUsersDoc,
-  adminShowUserDoc,
-  adminUpdateUserDoc,
+  adminCreateUserDocs,
+  adminDeleteUserDocs,
+  adminListUsersDocs,
+  adminShowUserDocs,
+  adminUpdateUserDocs,
 } from "./docs/docs";
-import Response from "@src/utils/global-response";
+import Response from "@/src/utils/global-response";
 import {
-  adminCreateUserResponse,
-  adminDeleteUserResponse,
-  adminListUserBranchesResponse,
-  adminListUsersResponse,
-  adminShowUserResponse,
-  adminUpdateUserResponse,
+  adminCreateUserResponseSchema,
+  adminDeleteUserResponseSchema,
+  adminListUsersResponseSchema,
+  adminShowUserResponseSchema,
+  adminUpdateUserResponseSchema,
 } from "./schemas/response";
-import { adminCheckPlugin } from "@src/plugins/auth-plugin";
+import { adminCheckPlugin } from "@/src/plugins/auth-plugin";
 import {
   adminCreateUserService,
   adminDeleteUserService,
   adminListAllUsersService,
-  adminListUserBranchesService,
   adminShowUserService,
   adminUpdateUserService,
 } from "./service";
@@ -44,8 +41,8 @@ export const adminUserRoutes = new Elysia({
       return await adminListAllUsersService(query);
     },
     {
-      detail: adminListUsersDoc,
-      response: Response(adminListUsersResponse),
+      detail: adminListUsersDocs,
+      response: Response(adminListUsersResponseSchema),
       query: adminListUsersQueryParamsSchema,
     },
   )
@@ -55,9 +52,9 @@ export const adminUserRoutes = new Elysia({
       return await adminCreateUserService(body);
     },
     {
-      body: createUserBody,
-      detail: adminCreateUserDoc,
-      response: Response(adminCreateUserResponse),
+      body: createUserBodySchema,
+      detail: adminCreateUserDocs,
+      response: Response(adminCreateUserResponseSchema),
     },
   )
   .patch(
@@ -66,10 +63,10 @@ export const adminUserRoutes = new Elysia({
       return await adminUpdateUserService(query, body);
     },
     {
-      body: updateUserBody,
-      query: userSelectQueryParams,
-      detail: adminUpdateUserDoc,
-      response: Response(adminUpdateUserResponse),
+      body: updateUserBodySchema,
+      query: userSelectQueryParamsSchema,
+      detail: adminUpdateUserDocs,
+      response: Response(adminUpdateUserResponseSchema),
     },
   )
   .delete(
@@ -78,9 +75,9 @@ export const adminUserRoutes = new Elysia({
       return await adminDeleteUserService(query);
     },
     {
-      query: adminDeleteUserQueryParams,
-      detail: adminDeleteUserDoc,
-      response: Response(adminDeleteUserResponse),
+      query: adminDeleteUserQueryParamsSchema,
+      detail: adminDeleteUserDocs,
+      response: Response(adminDeleteUserResponseSchema),
     },
   )
   .get(
@@ -89,19 +86,9 @@ export const adminUserRoutes = new Elysia({
       return await adminShowUserService(query);
     },
     {
-      query: userSelectQueryParams,
-      detail: adminShowUserDoc,
-      response: Response(adminShowUserResponse),
-    },
-  )
-  .get(
-    "/branches",
-    async ({ query }) => {
-      return await adminListUserBranchesService(query);
-    },
-    {
-      query: userSelectQueryParams,
-      detail: adminListUserBranchesDoc,
-      response: Response(adminListUserBranchesResponse),
+      query: userSelectQueryParamsSchema,
+      detail: adminShowUserDocs,
+      response: Response(adminShowUserResponseSchema),
     },
   );
+ 

@@ -1,37 +1,31 @@
 import { DocumentDecoration } from "elysia";
 
-export const adminListUsersDoc: DocumentDecoration = {
-  summary: "list users",
+export const adminListUsersDocs: DocumentDecoration = {
+  summary: "List users",
   description: "List all users",
   operationId: "adminListUsers",
 };
 
-export const adminCreateUserDoc: DocumentDecoration = {
-  summary: "add user",
+export const adminCreateUserDocs: DocumentDecoration = {
+  summary: "Add user",
   description: "Add new user",
   operationId: "adminAddUser",
 };
 
-export const adminUpdateUserDoc: DocumentDecoration = {
-  summary: "update user",
+export const adminUpdateUserDocs: DocumentDecoration = {
+  summary: "Update user",
   description: "Update user details",
   operationId: "adminUpdateUser",
 };
 
-export const adminDeleteUserDoc: DocumentDecoration = {
-  summary: "delete user",
-  description: "Delete user and all related memberships",
+export const adminDeleteUserDocs: DocumentDecoration = {
+  summary: "Delete user",
+  description: "Delete user",
   operationId: "adminDeleteUser",
 };
 
-export const adminShowUserDoc: DocumentDecoration = {
-  summary: "show user",
+export const adminShowUserDocs: DocumentDecoration = {
+  summary: "Show user",
   description: "Show user details",
   operationId: "adminShowUser",
-};
-
-export const adminListUserBranchesDoc: DocumentDecoration = {
-  summary: "list user branches",
-  description: "List all branches user has access to",
-  operationId: "adminListUserBranches",
 };

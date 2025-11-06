@@ -1,15 +1,18 @@
-import db from "@src/utils/db";
+import db from "@/src/utils/db";
 import { Static } from "elysia";
-import { createUserBody, updateUserBody } from "./schemas/request-body";
-import ApiError from "@src/utils/global-error";
 import {
-  adminDeleteUserQueryParams,
+  createUserBodySchema,
+  updateUserBodySchema,
+} from "./schemas/request-body";
+import ApiError from "@/src/utils/global-error";
+import {
+  adminDeleteUserQueryParamsSchema,
   adminListUsersQueryParamsSchema,
-  userSelectQueryParams,
+  userSelectQueryParamsSchema,
 } from "./schemas/query-params";
 
 export const adminListAllUsersService = async (
-  params: Static<typeof adminListUsersQueryParamsSchema>,
+  params: Static<typeof adminListUsersQueryParamsSchema>
 ) => {
   const users = await db.user.findMany({
     where: {
@@ -42,7 +45,7 @@ export const adminListAllUsersService = async (
 };
 
 export const adminCreateUserService = async (
-  body: Static<typeof createUserBody>,
+  body: Static<typeof createUserBodySchema>
 ) => {
   const check = await db.user.findUnique({
     where: {
@@ -71,7 +74,7 @@ export const adminCreateUserService = async (
   });
 
   if (!newUser?.id)
-    throw new ApiError("Issue happened while trying to add this user.");
+    throw new ApiError("Issue happened while trying to add this user");
 
   return {
     success: true,
@@ -81,8 +84,8 @@ export const adminCreateUserService = async (
 };
 
 export const adminUpdateUserService = async (
-  params: Static<typeof userSelectQueryParams>,
-  body: Static<typeof updateUserBody>,
+  params: Static<typeof userSelectQueryParamsSchema>,
+  body: Static<typeof updateUserBodySchema>
 ) => {
   const user = await db.user.findFirst({
     where: {
@@ -91,7 +94,7 @@ export const adminUpdateUserService = async (
     },
   });
 
-  if (!user?.id) throw new ApiError("User with this email/id doesnt exist.");
+  if (!user?.id) throw new ApiError("User with this email/id doesnt exist");
 
   if (body.email) {
     const existingEmailUser = await db.user.findUnique({
@@ -105,7 +108,12 @@ export const adminUpdateUserService = async (
     }
   }
 
-  const updateData: any = { ...body };
+  const updateData: any = {};
+  if (body.name) updateData.name = body.name;
+  if (body.email) updateData.email = body.email;
+  if (body.avatarUrl !== undefined)
+    updateData.avatarUrl = body.avatarUrl || null;
+  if (body.role) updateData.role = body.role;
   if (body.password) {
     updateData.password = await Bun.password.hash(body.password);
   }
@@ -125,43 +133,43 @@ export const adminUpdateUserService = async (
   });
 
   if (!updating?.id)
-    throw new ApiError("Issue happened while trying to update user.");
+    throw new ApiError("Issue happened while trying to update user");
 
   return {
     success: true,
-    message: "User updated successfully.",
+    message: "User updated successfully",
     data: updating,
   };
 };
 
 export const adminDeleteUserService = async (
-  params: Static<typeof adminDeleteUserQueryParams>,
+  params: Static<typeof adminDeleteUserQueryParamsSchema>
 ) => {
   const user = await db.user.findFirst({
     where: {
       id: params.id,
     },
   });
-  if (!user?.id) throw new ApiError("User with this id doesnt exist.");
+  if (!user?.id) throw new ApiError("User with this id doesnt exist");
 
   const deleting = await db.user.delete({
     where: { id: user.id },
   });
   if (!deleting?.id)
-    throw new ApiError("Issue happened while trying to delete user.");
+    throw new ApiError("Issue happened while trying to delete user");
 
   return {
     success: true,
-    message: "User deleted successfully.",
+    message: "User deleted successfully",
     data: null,
   };
 };
 
 export const adminShowUserService = async (
-  params: Static<typeof userSelectQueryParams>,
+  params: Static<typeof userSelectQueryParamsSchema>
 ) => {
   if (!params.id && !params.email)
-    throw new ApiError("please provide id or email of the user.");
+    throw new ApiError("Please provide id or email of the user");
 
   const user = await db.user.findFirst({
     where: {
@@ -178,47 +186,11 @@ export const adminShowUserService = async (
       avatarUrl: true,
     },
   });
-  if (!user?.id) throw new ApiError("User with this email/id doesnt exist.");
+  if (!user?.id) throw new ApiError("User with this email/id doesnt exist");
 
   return {
     success: true,
-    message: "User details fetched successfully.",
+    message: "User details fetched successfully",
     data: user,
-  };
-};
-
-export const adminListUserBranchesService = async (
-  params: Static<typeof userSelectQueryParams>,
-) => {
-  const user = await db.user.findFirst({
-    where: {
-      email: params.email,
-      id: params.id,
-    },
-  });
-  if (!user?.id) throw new ApiError("User with this email/id doesnt exist.");
-
-  const memberships = await db.branchMembership.findMany({
-    where: {
-      userId: user.id,
-    },
-    include: {
-      branch: {
-        include: {
-          organization: true,
-        },
-      },
-    },
-  });
-
-  if (!memberships)
-    throw new ApiError(
-      "Error happened while trying to fetch branches for this user.",
-    );
-
-  return {
-    success: true,
-    message: "User branches listed successfully.",
-    data: memberships.map((m) => m.branch),
   };
 };

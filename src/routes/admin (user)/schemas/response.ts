@@ -1,8 +1,6 @@
 import { t } from "elysia";
-import { BranchPlain } from "prisma/prismabox/Branch";
-import { OrganizationPlain } from "prisma/prismabox/Organization";
 
-const UserResponse = t.Object({
+const UserResponseSchema = t.Object({
   id: t.String(),
   name: t.String(),
   email: t.String(),
@@ -14,14 +12,8 @@ const UserResponse = t.Object({
   updatedAt: t.Date(),
 });
 
-export const adminListUsersResponse = t.Array(UserResponse);
-export const adminCreateUserResponse = UserResponse;
-export const adminUpdateUserResponse = UserResponse;
-export const adminDeleteUserResponse = t.Null();
-export const adminShowUserResponse = UserResponse;
-export const adminListUserBranchesResponse = t.Array(
-  t.Object({
-    ...BranchPlain.properties,
-    organization: OrganizationPlain,
-  }),
-);
+export const adminListUsersResponseSchema = t.Array(UserResponseSchema);
+export const adminCreateUserResponseSchema = UserResponseSchema;
+export const adminUpdateUserResponseSchema = UserResponseSchema;
+export const adminDeleteUserResponseSchema = t.Null();
+export const adminShowUserResponseSchema = UserResponseSchema;

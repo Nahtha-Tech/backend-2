@@ -1,6 +1,6 @@
 import { t } from "elysia";
 
-export const createUserBody = t.Object({
+export const createUserBodySchema = t.Object({
   name: t.String({
     minLength: 2,
     maxLength: 50,
@@ -23,31 +23,31 @@ export const createUserBody = t.Object({
       format: "uri",
       description: "User avatar URL",
       examples: ["https://example.com/avatar.jpg"],
-    }),
+    })
   ),
   role: t.Optional(
     t.Union([t.Literal("Admin"), t.Literal("User")], {
       description: "User role",
       default: "User",
-    }),
+    })
   ),
 });
 
-export const updateUserBody = t.Object({
+export const updateUserBodySchema = t.Object({
   name: t.Optional(
     t.String({
       minLength: 2,
       maxLength: 50,
       description: "User full name",
       examples: ["Omar Chatin"],
-    }),
+    })
   ),
   email: t.Optional(
     t.String({
       format: "email",
       description: "User email address",
       examples: ["omerchetin19@gmail.com"],
-    }),
+    })
   ),
   password: t.Optional(
     t.String({
@@ -55,18 +55,18 @@ export const updateUserBody = t.Object({
       maxLength: 100,
       description: "New password (6–100 characters)",
       examples: ["123456789"],
-    }),
+    })
   ),
   avatarUrl: t.Optional(
     t.String({
       format: "uri",
       description: "User avatar URL",
       examples: ["https://example.com/avatar.jpg"],
-    }),
+    })
   ),
   role: t.Optional(
     t.Union([t.Literal("Admin"), t.Literal("User")], {
       description: "User role",
-    }),
+    })
   ),
 });
