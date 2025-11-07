@@ -13,7 +13,7 @@ import {
   orgSelectQueryParamsSchema,
 } from "./schemas/query-params";
 import { SubscriptionStatus } from "@/prisma/prismabox/SubscriptionStatus";
-import crypto from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 
 import { waylWebhookRouteSchema } from "./schemas/response";
 
@@ -307,11 +307,6 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
     redirectionUrl: `${Bun.env.FRONTEND_URL}/payment/success`,
   };
 
-  console.log("Wayl Request:", {
-    url: `${Bun.env.WAYL_API_URL}/api/v1/links`,
-    body: requestBody,
-  });
-
   const waylResponse = await fetch(`${Bun.env.WAYL_API_URL}/api/v1/links`, {
     method: "POST",
     headers: {
@@ -357,28 +352,33 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
   };
 };
 
-function verifyWebhookSignature(
+export async function verifyWebhookSignature(
   data: string,
   signature: string,
   secret: string
 ) {
-  const calculatedSignature = crypto
-    .createHmac("sha256", secret)
+  const calculatedSignature = createHmac("sha256", secret)
     .update(data)
     .digest("hex");
-  const sigBuf = Buffer.from(signature, "hex");
-  const calcBuf = Buffer.from(calculatedSignature, "hex");
-  if (sigBuf.length !== calcBuf.length) return false;
-  return crypto.timingSafeEqual(sigBuf, calcBuf);
+
+  const signatureBuffer = Buffer.from(signature, "hex");
+
+  const calculatedSignatureBuffer = Buffer.from(calculatedSignature, "hex");
+
+  if (signatureBuffer.length !== calculatedSignatureBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(signatureBuffer, calculatedSignatureBuffer);
 }
 
-export const handleWaylWebhookService = async (body: any) => {
+export const handleWaylWebhookService = async (
+  body: any,
+  signature: string
+) => {
   console.log(body);
 
   const { referenceId, paymentStatus } = body;
-
-  console.log("status =========>", paymentStatus);
-  console.log("referenceId =========>", referenceId);
 
   if (paymentStatus !== "Paid") {
     return {

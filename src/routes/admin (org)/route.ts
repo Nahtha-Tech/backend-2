@@ -27,7 +27,6 @@ import {
   adminShowOrgResponseSchema,
   adminUpdateOrgResponseSchema,
   CreatePaymentLinkResponseSchema,
-  waylWebhookRouteSchema,
 } from "./schemas/response";
 import { adminCheckPlugin } from "@/src/plugins/auth-plugin";
 import {
@@ -39,6 +38,7 @@ import {
   adminShowOrgService,
   adminUpdateOrgService,
   handleWaylWebhookService,
+  verifyWebhookSignature,
 } from "./service";
 import ApiError from "@/src/utils/global-error";
 
@@ -133,14 +133,22 @@ export const adminOrgRoutes = new Elysia({
 export const waylWebhookRoute = new Elysia({
   prefix: "/webhooks",
   tags: ["Webhooks"],
-}).post(
-  "/wayl",
-  async ({ body, headers }) => {
-    console.log(console.log(headers));
+}).post("/wayl", async ({ body, headers, request }) => {
+  const signature = headers["x-wayl-signature-256"];
 
-    return await handleWaylWebhookService(body);
-  },
-  {
-    // response: Response(waylWebhookRouteSchema)
+  if (!signature) {
+    console.error("Webhook missing signature header");
+    throw new ApiError("Missing signature header", 401);
   }
-);
+
+  const rawBody = await request.clone().text();
+
+  const verifySig = await verifyWebhookSignature(
+    rawBody,
+    signature,
+    Bun.env.WAYL_WEBHOOK_SECRET!
+  );
+  if (!verifySig) throw new ApiError("Invalid signature", 401);
+
+  return await handleWaylWebhookService(body, signature);
+});
