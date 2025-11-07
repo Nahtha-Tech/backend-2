@@ -372,38 +372,17 @@ function verifyWebhookSignature(
   return crypto.timingSafeEqual(sigBuf, calcBuf);
 }
 
-export const handleWaylWebhookService = async (
-  rawBody: string,
-  signature?: string
-) => {
-  const secret = Bun.env.WAYL_WEBHOOK_SECRET;
-  if (!secret) throw new ApiError("Webhook secret is not configured.");
-  if (!signature) throw new ApiError("No signature provided.");
+export const handleWaylWebhookService = async (body: any) => {
+  const { referenceId, status, completedAt } = body;
 
-  const ok = verifyWebhookSignature(rawBody, signature, secret);
-  if (!ok) throw new ApiError("Invalid webhook signature.");
+  console.log("status =========>", status);
+  console.log("referenceId =========>", referenceId);
+  console.log("completedAt =========>", completedAt);
 
-  // Parse after verifying HMAC over the exact raw body
-  let body: any;
-  try {
-    body = JSON.parse(rawBody);
-  } catch {
-    throw new ApiError("Failed to parse webhook body.");
-  }
-
-  // Wayl sends either `paymentStatus` or link `status`
-  const status = body.paymentStatus ?? body.status; // e.g., "Paid" or "Completed"
-  const referenceId: string | undefined = body.referenceId;
-  const completedAt: string | undefined = body.completedAt;
-
-  if (!referenceId) throw new ApiError("Missing referenceId in webhook.");
-
-  // Only process successful payments:
-  const isSuccess = status === "Paid" || status === "Completed";
-  if (!isSuccess) {
+  if (status !== "Completed") {
     return {
       success: true,
-      message: `Webhook received. Not a successful payment. Status: ${status ?? "Unknown"}`,
+      message: "Webhook received but payment not completed",
       data: null,
     };
   }
@@ -412,6 +391,7 @@ export const handleWaylWebhookService = async (
     where: { waylReferenceId: referenceId },
     include: { subscription: true },
   });
+
   if (!payment)
     throw new ApiError(`Payment not found for reference: ${referenceId}`);
   if (payment.isPaid) {
