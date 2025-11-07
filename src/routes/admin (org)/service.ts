@@ -373,6 +373,8 @@ function verifyWebhookSignature(
 }
 
 export const handleWaylWebhookService = async (body: any) => {
+  console.log(body);
+
   const { referenceId, paymentStatus } = body;
 
   console.log("status =========>", paymentStatus);
