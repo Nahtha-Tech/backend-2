@@ -373,16 +373,15 @@ function verifyWebhookSignature(
 }
 
 export const handleWaylWebhookService = async (body: any) => {
-  const { referenceId, status, completedAt } = body;
+  const { referenceId, paymentStatus } = body;
 
-  console.log("status =========>", status);
+  console.log("status =========>", paymentStatus);
   console.log("referenceId =========>", referenceId);
-  console.log("completedAt =========>", completedAt);
 
-  if (status !== "Completed") {
+  if (paymentStatus !== "Paid") {
     return {
       success: true,
-      message: "Webhook received but payment not completed",
+      message: "Webhook received but payment not completed.",
       data: null,
     };
   }
@@ -402,8 +401,8 @@ export const handleWaylWebhookService = async (body: any) => {
     where: { id: payment.id },
     data: {
       isPaid: true,
-      waylStatus: "Completed", // normalize
-      paidAt: completedAt ? new Date(completedAt) : new Date(),
+      waylStatus: "Paid",
+      paidAt: new Date(),
       notes: payment.notes ?? `Wayl webhook processed (status=${status})`,
     },
   });

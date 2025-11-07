@@ -135,7 +135,9 @@ export const waylWebhookRoute = new Elysia({
   tags: ["Webhooks"],
 }).post(
   "/wayl",
-  async ({ body }) => {
+  async ({ body, headers }) => {
+    console.log(console.log(headers));
+
     return await handleWaylWebhookService(body);
   },
   {
