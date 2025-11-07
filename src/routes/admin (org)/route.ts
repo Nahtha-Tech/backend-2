@@ -135,19 +135,17 @@ export const waylWebhookRoute = new Elysia({
   tags: ["Webhooks"],
 }).post(
   "/wayl",
+  async ({ request, body, headers }) => {
+    console.log(request, body, headers);
+    const rawBody = await request.text();
+    if (!rawBody) throw new ApiError("Empty request body");
 
-  async ({ headers, request }) => {
-    const signature = headers["x-wayl-signature-256"];
+    const sig =
+      request.headers.get("x-wayl-signature-256") ??
+      request.headers.get("X-WAYL-SIGNATURE-256") ??
+      undefined;
 
-    const rawBodyString = await request.text();
-
-    if (!rawBodyString) {
-      throw new ApiError("Empty request body");
-    }
-
-    return await handleWaylWebhookService(rawBodyString, signature);
+    return await handleWaylWebhookService(rawBody, sig);
   },
-  {
-    response: Response(waylWebhookRouteSchema),
-  }
+  { response: Response(waylWebhookRouteSchema) }
 );
