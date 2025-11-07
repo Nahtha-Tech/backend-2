@@ -3,6 +3,7 @@ import { Static } from "elysia";
 import {
   createOrgBodySchema,
   updateOrgBodySchema,
+  waylWebhookRouteBodySchema,
 } from "./schemas/request-body";
 import ApiError from "@/src/utils/global-error";
 import {
@@ -13,6 +14,8 @@ import {
 } from "./schemas/query-params";
 import { SubscriptionStatus } from "@/prisma/prismabox/SubscriptionStatus";
 import crypto from "crypto";
+
+import { waylWebhookRouteSchema } from "./schemas/response";
 
 export const adminListAllOrgsService = async (
   params: Static<typeof adminListOrgsQueryParamsSchema>
@@ -263,40 +266,6 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
   if (!subscription)
     throw new ApiError("Organization does not have a subscription");
 
-  const existingLink = await db.payment.findFirst({
-    where: {
-      subscriptionId: subscription.id,
-      isPaid: false,
-    },
-  });
-
-  if (existingLink) {
-    const waylResponse = await fetch(
-      `${Bun.env.WAYL_API_URL}/api/v1/links/${existingLink.waylReferenceId}`,
-      {
-        method: "GET",
-        headers: {
-          "X-WAYL-AUTHENTICATION": Bun.env.WAYL_API_KEY!,
-        },
-      }
-    );
-
-    if (waylResponse.ok) {
-      const { data: linkData } = await waylResponse.json();
-      return {
-        success: true,
-        message: "Existing payment link returned",
-        data: {
-          paymentId: existingLink.id,
-          paymentUrl: linkData.url,
-          amount: existingLink.amount,
-          currency: "IQD",
-          expiresAt: existingLink.periodEnd,
-        },
-      };
-    }
-  }
-
   const periodStart = new Date();
   const periodEnd = new Date();
   periodEnd.setMonth(periodEnd.getMonth() + 1);
@@ -331,7 +300,9 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
           "https://www.fabulousflowers.co.za/cdn/shop/files/LushWonderFlowerBouquet-FabulousFlowersandGifts3.jpg",
       },
     ],
+
     webhookUrl: `${Bun.env.BACKEND_URL}/webhooks/wayl`,
+
     webhookSecret: Bun.env.WAYL_WEBHOOK_SECRET!,
     redirectionUrl: `${Bun.env.FRONTEND_URL}/payment/success`,
   };
@@ -406,16 +377,12 @@ function verifyWebhookSignature(
   return crypto.timingSafeEqual(signatureBuffer, calculatedSignatureBuffer);
 }
 
+// 1. Service function now accepts the rawBody string
 export const handleWaylWebhookService = async (
   rawBody: string,
   signature: string | undefined
 ) => {
   const secret = Bun.env.WAYL_WEBHOOK_SECRET;
-  console.log("=== Webhook Service Debug ===");
-  console.log("Secret exists:", !!secret);
-  console.log("Secret length:", secret?.length);
-  console.log("Signature:", signature);
-  console.log("Raw body:", rawBody);
 
   if (!secret) {
     throw new ApiError("Webhook secret is not configured.");
@@ -424,15 +391,24 @@ export const handleWaylWebhookService = async (
     throw new ApiError("No signature provided.");
   }
 
+  // 2. Verify the raw body *before* parsing
   const isVerified = verifyWebhookSignature(rawBody, signature, secret);
 
   if (!isVerified) {
     throw new ApiError("Invalid webhook signature.");
   }
 
-  const webhookData = JSON.parse(rawBody);
+  // 3. Now that it's verified, parse the JSON
+  let webhookData: Static<typeof waylWebhookRouteBodySchema>;
+  try {
+    webhookData = JSON.parse(rawBody);
+  } catch (error) {
+    throw new ApiError("Failed to parse webhook body.");
+  }
+
   console.log("webhookData --->", webhookData);
 
+  // 4. Use the parsed data
   const { referenceId, paymentStatus, completedAt } = webhookData;
 
   if (paymentStatus !== "Completed") {

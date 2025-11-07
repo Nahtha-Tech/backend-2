@@ -40,6 +40,7 @@ import {
   adminUpdateOrgService,
   handleWaylWebhookService,
 } from "./service";
+import ApiError from "@/src/utils/global-error";
 
 export const adminOrgRoutes = new Elysia({
   prefix: "/admin/org",
@@ -134,20 +135,19 @@ export const waylWebhookRoute = new Elysia({
   tags: ["Webhooks"],
 }).post(
   "/wayl",
-  async ({ body, headers }) => {
+
+  async ({ headers, request }) => {
     const signature = headers["x-wayl-signature-256"];
 
-    console.log("=== Webhook Debug Info ===");
-    console.log("All headers:", headers);
-    console.log("Signature header:", headers["x-wayl-signature-256"]);
-    console.log("Body type:", typeof body);
-    console.log("Body content:", body);
+    const rawBodyString = await request.text();
 
-    return await handleWaylWebhookService(body, signature);
+    if (!rawBodyString) {
+      throw new ApiError("Empty request body");
+    }
+
+    return await handleWaylWebhookService(rawBodyString, signature);
   },
   {
-    type: "text",
     response: Response(waylWebhookRouteSchema),
-    body: waylWebhookRouteBodySchema,
   }
 );

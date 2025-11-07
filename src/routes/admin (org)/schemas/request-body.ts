@@ -126,4 +126,37 @@ export const updateOrgBodySchema = t.Object({
   ),
 });
 
-export const waylWebhookRouteBodySchema = t.String()
+export const waylWebhookRouteBodySchema = t.Object(
+  {
+    verb: t.String(),
+    event: t.String(),
+    referenceId: t.String(),
+    paymentMethod: t.String(),
+    paymentStatus: t.String(),
+    paymentProcessor: t.String(),
+    total: t.Number(),
+    commission: t.Number(),
+    code: t.String(),
+    customer: t.Object({
+      id: t.String(),
+      name: t.String(),
+      phone: t.String(),
+      city: t.String(),
+      country: t.String(),
+      address: t.String(),
+    }),
+    items: t.Array(
+      t.Object({
+        type: t.String(),
+        image: t.String({ format: "uri" }),
+        label: t.String(),
+        amount: t.Number(),
+      })
+    ),
+    id: t.String(),
+    completedAt: t.Optional(t.String({ format: "date-time" })),
+  },
+  {
+    additionalProperties: true,
+  }
+);
