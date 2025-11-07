@@ -15,6 +15,11 @@ export const createPlanBodySchema = t.Object({
     description: "Plan price in IQD",
     examples: [50000],
   }),
+  durationInDays: t.Number({
+    minimum: 1,
+    description: "Plan duration in days",
+    examples: [30],
+  }),
   maxCategories: t.Number({
     minimum: 1,
     description: "Maximum categories",
@@ -46,6 +51,13 @@ export const updatePlanBodySchema = t.Object({
       minimum: 0,
       description: "Plan price in IQD",
       examples: [50000],
+    })
+  ),
+  durationInDays: t.Optional(
+    t.Number({
+      minimum: 1,
+      description: "Plan duration in days",
+      examples: [30],
     })
   ),
   maxCategories: t.Optional(

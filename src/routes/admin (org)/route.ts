@@ -150,5 +150,5 @@ export const waylWebhookRoute = new Elysia({
   );
   if (!verifySig) throw new ApiError("Invalid signature", 401);
 
-  return await handleWaylWebhookService(body, signature);
+  return await handleWaylWebhookService(body);
 });

@@ -172,6 +172,8 @@ model Plan {
 
   price Int @default(0)
 
+  durationInDays Int @default(30)
+
   maxCategories Int @default(10)
   maxItems      Int @default(50)
   maxStaff      Int @default(5)

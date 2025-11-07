@@ -266,9 +266,10 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
   if (!subscription)
     throw new ApiError("Organization does not have a subscription");
 
+  const durationDays = subscription.plan.durationInDays;
   const periodStart = new Date();
   const periodEnd = new Date();
-  periodEnd.setMonth(periodEnd.getMonth() + 1);
+  periodEnd.setDate(periodEnd.getDate() + durationDays);
 
   const referenceId = `sub-${subscription.id}-${Date.now()}`;
 
@@ -372,12 +373,7 @@ export async function verifyWebhookSignature(
   return timingSafeEqual(signatureBuffer, calculatedSignatureBuffer);
 }
 
-export const handleWaylWebhookService = async (
-  body: any,
-  signature: string
-) => {
-  console.log(body);
-
+export const handleWaylWebhookService = async (body: any) => {
   const { referenceId, paymentStatus } = body;
 
   if (paymentStatus !== "Paid") {
@@ -405,7 +401,8 @@ export const handleWaylWebhookService = async (
       isPaid: true,
       waylStatus: "Paid",
       paidAt: new Date(),
-      notes: payment.notes ?? `Wayl webhook processed (status=${status})`,
+      notes:
+        payment.notes ?? `Wayl webhook processed (status=${paymentStatus})`,
     },
   });
 

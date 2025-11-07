@@ -54,6 +54,7 @@ export const SubscriptionRelations = t.Object(
         name: t.Any({ description: `[LocalString]` }),
         description: __nullable__(t.Any({ description: `[LocalString]` })),
         price: t.Integer(),
+        durationInDays: t.Integer(),
         maxCategories: t.Integer(),
         maxItems: t.Integer(),
         maxStaff: t.Integer(),

@@ -1,6 +1,9 @@
 import db from "@/src/utils/db";
 import { Static } from "elysia";
-import { createPlanBodySchema, updatePlanBodySchema } from "./schemas/request-body";
+import {
+  createPlanBodySchema,
+  updatePlanBodySchema,
+} from "./schemas/request-body";
 import ApiError from "@/src/utils/global-error";
 import {
   adminDeletePlanQueryParamsSchema,
@@ -51,6 +54,7 @@ export const adminCreatePlanService = async (
       name: body.name,
       description: body.description,
       price: body.price,
+      durationInDays: body.durationInDays,
       maxCategories: body.maxCategories,
       maxItems: body.maxItems,
       maxStaff: body.maxStaff,
@@ -59,7 +63,8 @@ export const adminCreatePlanService = async (
     },
   });
 
-  if (!newPlan?.id) throw new ApiError("Issue happened while trying to add this plan");
+  if (!newPlan?.id)
+    throw new ApiError("Issue happened while trying to add this plan");
 
   return {
     success: true,
@@ -82,7 +87,10 @@ export const adminUpdatePlanService = async (
   if (body.name) updateData.name = body.name;
   if (body.description !== undefined) updateData.description = body.description;
   if (body.price !== undefined) updateData.price = body.price;
-  if (body.maxCategories !== undefined) updateData.maxCategories = body.maxCategories;
+  if (body.durationInDays !== undefined)
+    updateData.durationInDays = body.durationInDays;
+  if (body.maxCategories !== undefined)
+    updateData.maxCategories = body.maxCategories;
   if (body.maxItems !== undefined) updateData.maxItems = body.maxItems;
   if (body.maxStaff !== undefined) updateData.maxStaff = body.maxStaff;
   if (body.maxMedia !== undefined) updateData.maxMedia = body.maxMedia;
@@ -93,7 +101,8 @@ export const adminUpdatePlanService = async (
     data: updateData,
   });
 
-  if (!updating?.id) throw new ApiError("Issue happened while trying to update plan");
+  if (!updating?.id)
+    throw new ApiError("Issue happened while trying to update plan");
 
   return {
     success: true,
@@ -115,7 +124,8 @@ export const adminDeletePlanService = async (
     where: { id: plan.id },
   });
 
-  if (!deleting?.id) throw new ApiError("Issue happened while trying to delete plan");
+  if (!deleting?.id)
+    throw new ApiError("Issue happened while trying to delete plan");
 
   return {
     success: true,

@@ -5,6 +5,7 @@ const PlanResponseSchema = t.Object({
   name: t.Any(),
   description: t.Nullable(t.Any()),
   price: t.Number(),
+  durationInDays: t.Number(),
   maxCategories: t.Number(),
   maxItems: t.Number(),
   maxStaff: t.Number(),
