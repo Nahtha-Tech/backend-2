@@ -125,3 +125,5 @@ export const updateOrgBodySchema = t.Object({
     })
   ),
 });
+
+export const waylWebhookRouteBodySchema = t.String()

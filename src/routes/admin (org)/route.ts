@@ -2,6 +2,7 @@ import Elysia from "elysia";
 import {
   createOrgBodySchema,
   updateOrgBodySchema,
+  waylWebhookRouteBodySchema,
 } from "./schemas/request-body";
 import {
   adminDeleteOrgQueryParamsSchema,
@@ -133,10 +134,13 @@ export const waylWebhookRoute = new Elysia({
   tags: ["Webhooks"],
 }).post(
   "/wayl",
-  async ({ body }) => {
-    return await handleWaylWebhookService(body);
+  async ({ body, headers }) => {
+    const signature = headers["x-wayl-signature-256"];
+    return await handleWaylWebhookService(body, signature);
   },
   {
+    type: "text",
     response: Response(waylWebhookRouteSchema),
+    body: waylWebhookRouteBodySchema,
   }
 );

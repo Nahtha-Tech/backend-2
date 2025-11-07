@@ -11,6 +11,8 @@ import {
   adminListPaymentsQueryParamsSchema,
   orgSelectQueryParamsSchema,
 } from "./schemas/query-params";
+import { SubscriptionStatus } from "@/prisma/prismabox/SubscriptionStatus";
+import crypto from "crypto";
 
 export const adminListAllOrgsService = async (
   params: Static<typeof adminListOrgsQueryParamsSchema>
@@ -207,9 +209,7 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
     where: { id: organizationId },
     include: { plan: true },
   });
-
   if (!org) throw new ApiError("Organization not found");
-
   if (!org.plan?.id)
     throw new ApiError("This organization doesnt have a plan yet.");
 
@@ -219,9 +219,21 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
 
   const referenceId = `org-${organizationId}-${Date.now()}`;
 
-  // Convert USD to IQD (Wayl requires IQD, min 1000)
-  const amountUSD = parseFloat(org.plan.price.toString());
-  const amountIQD = Math.round(amountUSD * 1300);
+  // IQD only. Ensure integer and >= 1000 for Wayl.
+  const toIQDInt = (v: unknown) => {
+    const n =
+      typeof v === "number"
+        ? v
+        : typeof v === "bigint"
+          ? Number(v)
+          : v && typeof (v as any).toNumber === "function"
+            ? (v as any).toNumber()
+            : Number(v);
+    if (!Number.isFinite(n)) throw new ApiError("Invalid plan price");
+    return Math.max(1000, Math.round(n));
+  };
+
+  const amountIQD = toIQDInt(org.plan.price);
 
   const waylResponse = await fetch(`${Bun.env.WAYL_API_URL}/api/v1/links`, {
     method: "POST",
@@ -235,11 +247,11 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
       currency: "IQD",
       lineItem: [
         {
-          label: `${org.plan.name.en || "Plan"} - Monthly`,
+          label: `${(org.plan as any)?.name?.en || (org.plan as any)?.name || "Plan"}`,
           amount: amountIQD,
           type: "increase",
           image:
-            "https://img.freepik.com/free-photo/3d-hand-making-cashless-payment-from-smartphone_107791-16609.jpg?semt=ais_hybrid&w=740&q=80",
+            "https://img.freepik.com/free-photo/3d-hand-making-cashless-payment-from-smartphone_107791-16609.jpg?w=740&q=80",
         },
       ],
       webhookUrl: `${Bun.env.BACKEND_URL}/webhooks/wayl`,
@@ -253,12 +265,11 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
     throw new ApiError(`Wayl API error: ${errorText}`);
   }
 
-  const waylData = await waylResponse.json();
-  const linkData = waylData.data;
+  const { data: linkData } = await waylResponse.json();
 
   const payment = await db.payment.create({
     data: {
-      amount: org.plan.price,
+      amount: amountIQD,
       paidAt: new Date(),
       periodStart,
       periodEnd,
@@ -267,7 +278,7 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
       waylLinkId: linkData.id,
       waylStatus: "Pending",
       isPaid: false,
-      notes: `Wayl: $${amountUSD} USD (${amountIQD} IQD)`,
+      notes: `Wayl: ${amountIQD} IQD`,
     },
   });
 
@@ -277,27 +288,81 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
     data: {
       paymentId: payment.id,
       paymentUrl: linkData.url,
-      amount: amountUSD,
-      currency: "USD",
+      amount: amountIQD,
+      currency: "IQD",
       expiresAt: periodEnd,
     },
   };
 };
 
-export const handleWaylWebhookService = async (webhookData: any) => {
-  const { referenceId, status, completedAt } = webhookData;
+function verifyWebhookSignature(
+  data: string,
+  signature: string,
+  secret: string
+) {
+  //generate signature from data and secret
+  const calculatedSignature = crypto
+    .createHmac("sha256", secret)
+    .update(data)
+    .digest("hex");
 
-  if (status !== "Completed") {
-    return { success: true, message: "Payment not completed", data: null };
+  const signatureBuffer = Buffer.from(signature, "hex");
+  const calculatedSignatureBuffer = Buffer.from(calculatedSignature, "hex");
+
+  if (signatureBuffer.length !== calculatedSignatureBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(signatureBuffer, calculatedSignatureBuffer);
+  // true if the signature is valid, false otherwise
+}
+
+export const handleWaylWebhookService = async (
+  rawBody: string,
+  signature: string | undefined
+) => {
+  const secret = Bun.env.WAYL_WEBHOOK_SECRET;
+
+  if (!secret) {
+    throw new ApiError("Webhook secret is not configured.");
+  }
+  if (!signature) {
+    throw new ApiError("No signature provided.");
+  }
+
+  const isVerified = verifyWebhookSignature(rawBody, signature, secret);
+
+  if (!isVerified) {
+    throw new ApiError("Invalid webhook signature.");
+  }
+
+  const webhookData = JSON.parse(rawBody);
+
+  const { referenceId, paymentStatus, completedAt } = webhookData;
+
+  if (paymentStatus !== "Completed") {
+    return {
+      success: true,
+      message: `Webhook received but payment not completed. Status: ${paymentStatus || "Unknown"}`,
+      data: null,
+    };
   }
 
   const payment = await db.payment.findFirst({
     where: { waylReferenceId: referenceId },
+    include: { organization: true },
   });
 
-  if (!payment) throw new ApiError(`Payment not found: ${referenceId}`);
+  if (!payment) {
+    throw new ApiError(`Payment not found for reference: ${referenceId}`);
+  }
+
   if (payment.isPaid) {
-    return { success: true, message: "Already processed", data: null };
+    return {
+      success: true,
+      message: "Payment already processed",
+      data: null,
+    };
   }
 
   await db.payment.update({
@@ -312,14 +377,14 @@ export const handleWaylWebhookService = async (webhookData: any) => {
   await db.organization.update({
     where: { id: payment.organizationId },
     data: {
-      subscriptionStatus: "Active",
+      subscriptionStatus: SubscriptionStatus.ACTIVE,
       subscriptionEndsAt: payment.periodEnd,
     },
   });
 
   return {
     success: true,
-    message: "Payment processed, subscription activated",
+    message: "Payment processed and subscription activated",
     data: null,
   };
 };
