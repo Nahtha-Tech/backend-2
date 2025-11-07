@@ -49,22 +49,30 @@ export const uploadMediaService = async (
     throw new ApiError("Only image files are allowed");
   }
 
-  // Check media limit BEFORE uploading
-  const subscription = await db.subscription.findUnique({
-    where: { organizationId },
-    include: { plan: true },
-  });
+  // Only check media limit for category and item images
+  // orgLogo and avatarImage are unrestricted
+  if (uploadType === "categoryImage" || uploadType === "itemImage") {
+    const subscription = await db.subscription.findUnique({
+      where: { organizationId },
+      include: { plan: true },
+    });
 
-  if (!subscription) throw new ApiError("Organization has no subscription");
+    if (!subscription) throw new ApiError("Organization has no subscription");
 
-  const currentMediaCount = await db.media.count({
-    where: { organizationId },
-  });
+    const currentMediaCount = await db.media.count({
+      where: {
+        organizationId,
+        type: {
+          in: ["categoryImage", "itemImage"],
+        },
+      },
+    });
 
-  if (currentMediaCount >= subscription.plan.maxMedia) {
-    throw new ApiError(
-      `Plan limit reached. Your plan allows ${subscription.plan.maxMedia} media files. Upgrade to add more.`
-    );
+    if (currentMediaCount >= subscription.plan.maxMedia) {
+      throw new ApiError(
+        `Plan limit reached. Your plan allows ${subscription.plan.maxMedia} media files. Upgrade to add more.`
+      );
+    }
   }
 
   try {
