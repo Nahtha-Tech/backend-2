@@ -17,7 +17,7 @@ export const PaymentPlain = t.Object(
     waylLinkId: __nullable__(t.String()),
     waylStatus: __nullable__(t.String()),
     isPaid: t.Boolean(),
-    organizationId: t.String(),
+    subscriptionId: t.String(),
     createdAt: t.Date(),
     updatedAt: t.Date(),
   },
@@ -26,23 +26,12 @@ export const PaymentPlain = t.Object(
 
 export const PaymentRelations = t.Object(
   {
-    organization: t.Object(
+    subscription: t.Object(
       {
         id: t.String(),
-        name: t.Any({ description: `[LocalString]` }),
-        description: __nullable__(t.Any({ description: `[LocalString]` })),
-        phoneNumber: __nullable__(t.String()),
-        email: __nullable__(t.String()),
-        googleMapsLink: __nullable__(t.String()),
-        socialMedia: t.Array(t.Any({ description: `[SocialMediaLink]` }), {
-          additionalProperties: false,
-        }),
-        slug: t.String(),
-        logoImgUrl: __nullable__(t.String()),
-        menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
-          additionalProperties: false,
-        }),
-        subscriptionStatus: t.Union(
+        organizationId: t.String(),
+        planId: t.String(),
+        status: t.Union(
           [
             t.Literal("Active"),
             t.Literal("Inactive"),
@@ -51,10 +40,9 @@ export const PaymentRelations = t.Object(
           ],
           { additionalProperties: false },
         ),
-        subscriptionEndsAt: __nullable__(t.Date()),
+        endsAt: __nullable__(t.Date()),
         createdAt: t.Date(),
         updatedAt: t.Date(),
-        planId: __nullable__(t.String()),
       },
       { additionalProperties: false },
     ),
@@ -90,7 +78,7 @@ export const PaymentPlainInputUpdate = t.Object(
 
 export const PaymentRelationsInputCreate = t.Object(
   {
-    organization: t.Object(
+    subscription: t.Object(
       {
         connect: t.Object(
           {
@@ -108,7 +96,7 @@ export const PaymentRelationsInputCreate = t.Object(
 export const PaymentRelationsInputUpdate = t.Partial(
   t.Object(
     {
-      organization: t.Object(
+      subscription: t.Object(
         {
           connect: t.Object(
             {
@@ -143,7 +131,7 @@ export const PaymentWhere = t.Partial(
           waylLinkId: t.String(),
           waylStatus: t.String(),
           isPaid: t.Boolean(),
-          organizationId: t.String(),
+          subscriptionId: t.String(),
           createdAt: t.Date(),
           updatedAt: t.Date(),
         },
@@ -204,7 +192,7 @@ export const PaymentWhereUnique = t.Recursive(
               waylLinkId: t.String(),
               waylStatus: t.String(),
               isPaid: t.Boolean(),
-              organizationId: t.String(),
+              subscriptionId: t.String(),
               createdAt: t.Date(),
               updatedAt: t.Date(),
             },
@@ -231,8 +219,8 @@ export const PaymentSelect = t.Partial(
       waylLinkId: t.Boolean(),
       waylStatus: t.Boolean(),
       isPaid: t.Boolean(),
-      organization: t.Boolean(),
-      organizationId: t.Boolean(),
+      subscription: t.Boolean(),
+      subscriptionId: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
       _count: t.Boolean(),
@@ -243,7 +231,7 @@ export const PaymentSelect = t.Partial(
 
 export const PaymentInclude = t.Partial(
   t.Object(
-    { organization: t.Boolean(), _count: t.Boolean() },
+    { subscription: t.Boolean(), _count: t.Boolean() },
     { additionalProperties: false },
   ),
 );
@@ -284,7 +272,7 @@ export const PaymentOrderBy = t.Partial(
       isPaid: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      organizationId: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      subscriptionId: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
       createdAt: t.Union([t.Literal("asc"), t.Literal("desc")], {

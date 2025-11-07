@@ -18,14 +18,11 @@ export const authPlugin = async (app: Elysia) =>
       })
     )
     .derive(async ({ jwt, cookie: { accessToken, refreshToken } }) => {
-      // check if the user has accessToken
       if (!accessToken.value) throw new ApiError("Unautherized.", 401);
 
-      // check if the user is signed in
       const payload = await jwt.verify(accessToken.value.toString());
       if (!payload) throw new ApiError("Unautherized.", 401);
 
-      // get the user
       const user = await db.user.findUnique({
         where: { id: payload.sub },
       });
@@ -46,31 +43,28 @@ export const adminCheckPlugin = (app: Elysia) =>
   });
 
 export const businessPlugin = (app: Elysia) =>
-  app
-    .use(authPlugin)
+  app.use(authPlugin).derive(async ({ user }) => {
+    if (!user?.id) throw new ApiError("Unauthorized.", 401);
 
-    .derive(async ({ user }) => {
-      if (!user?.id) throw new ApiError("Unauthorized.", 401);
+    if (!user.organizationId)
+      throw new ApiError("User not associated with any organization.");
 
-      if (!user.organizationId)
-        throw new ApiError("User not associated with any organization.");
-
-      const org = await db.organization.findUnique({
-        where: { id: user.organizationId },
-        select: {
-          subscriptionStatus: true,
-          subscriptionEndsAt: true,
-        },
-      });
-
-      if (
-        org?.subscriptionStatus !== "Active" ||
-        (org.subscriptionEndsAt && org.subscriptionEndsAt < new Date())
-      ) {
-        throw new ApiError("Subscription inactive or expired", 402);
-      }
-
-      return {
-        organizationId: user.organizationId,
-      };
+    const subscription = await db.subscription.findUnique({
+      where: { organizationId: user.organizationId },
+      select: {
+        status: true,
+        endsAt: true,
+      },
     });
+
+    if (
+      subscription?.status !== "Active" ||
+      (subscription.endsAt && subscription.endsAt < new Date())
+    ) {
+      throw new ApiError("Subscription inactive or expired", 402);
+    }
+
+    return {
+      organizationId: user.organizationId,
+    };
+  });

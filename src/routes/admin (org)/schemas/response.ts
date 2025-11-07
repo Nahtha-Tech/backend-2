@@ -35,6 +35,20 @@ const PlanSchema = t.Object({
   updatedAt: t.Date(),
 });
 
+const SubscriptionSchema = t.Object({
+  id: t.String(),
+  status: t.Union([
+    t.Literal("Active"),
+    t.Literal("Inactive"),
+    t.Literal("Trial"),
+    t.Literal("Expired"),
+  ]),
+  endsAt: t.Nullable(t.Date()),
+  plan: PlanSchema,
+  createdAt: t.Date(),
+  updatedAt: t.Date(),
+});
+
 const OrgResponseSchema = t.Object({
   id: t.String(),
   name: t.Any(),
@@ -45,7 +59,7 @@ const OrgResponseSchema = t.Object({
   socialMedia: t.Array(t.Any()),
   slug: t.String(),
   logoImgUrl: t.Nullable(t.String()),
-  plan: t.Nullable(PlanSchema),
+  subscription: t.Nullable(SubscriptionSchema),
   menuStructure: t.Array(
     t.Object({
       type: t.Union([t.Literal("category"), t.Literal("item")]),

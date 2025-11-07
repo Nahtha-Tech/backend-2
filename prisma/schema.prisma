@@ -64,15 +64,36 @@ model Organization {
   menuStructure Json[]
 
   medias Media[]
-  plan   Plan?   @relation(fields: [planId], references: [id])
-  payments Payment[]
   
-  subscriptionStatus SubscriptionStatus @default(Inactive)
-  subscriptionEndsAt DateTime?
+  subscription Subscription?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  planId    String?
+}
+
+model Subscription {
+  id String @id @default(uuid())
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String @unique
+  
+  plan   Plan @relation(fields: [planId], references: [id])
+  planId String
+  
+  status SubscriptionStatus @default(Inactive)
+  endsAt DateTime?
+  
+  payments Payment[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SubscriptionStatus {
+  Active
+  Inactive
+  Trial
+  Expired
 }
 
 model Category {
@@ -158,13 +179,11 @@ model Plan {
 
   isActive Boolean @default(true)
 
-  organizations Organization[]
+  subscriptions Subscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
-
 
 model Payment {
   id     String  @id @default(uuid())
@@ -180,21 +199,12 @@ model Payment {
   
   waylReferenceId String? @unique
   waylLinkId      String? @unique
-  waylStatus      String? // Pending, Completed, Cancelled
+  waylStatus      String?
   isPaid          Boolean @default(false)
   
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  subscriptionId String
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-
-
-enum SubscriptionStatus {
-  Active
-  Inactive
-  Trial
-  Expired
 }

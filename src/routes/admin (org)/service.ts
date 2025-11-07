@@ -30,7 +30,13 @@ export const adminListAllOrgsService = async (
   const [orgs, total] = await Promise.all([
     db.organization.findMany({
       where,
-      include: { plan: true },
+      include: {
+        subscription: {
+          include: {
+            plan: true,
+          },
+        },
+      },
       skip,
       take: limit,
     }),
@@ -80,9 +86,22 @@ export const adminCreateOrgService = async (
       socialMedia: body.socialMedia || [],
       slug: body.slug,
       logoImgUrl: body.logoImgUrl,
-      planId: body.planId || null,
+      subscription: body.planId
+        ? {
+            create: {
+              planId: body.planId,
+              status: "Inactive",
+            },
+          }
+        : undefined,
     },
-    include: { plan: true },
+    include: {
+      subscription: {
+        include: {
+          plan: true,
+        },
+      },
+    },
   });
 
   if (!newOrg?.id)
@@ -103,6 +122,9 @@ export const adminUpdateOrgService = async (
     where: {
       slug: params.slug,
       id: params.id,
+    },
+    include: {
+      subscription: true,
     },
   });
 
@@ -138,12 +160,34 @@ export const adminUpdateOrgService = async (
   if (body.socialMedia !== undefined) updateData.socialMedia = body.socialMedia;
   if (body.slug) updateData.slug = body.slug;
   if (body.logoImgUrl !== undefined) updateData.logoImgUrl = body.logoImgUrl;
-  if (body.planId !== undefined) updateData.planId = body.planId;
+
+  if (body.planId !== undefined) {
+    if (org.subscription) {
+      updateData.subscription = {
+        update: {
+          planId: body.planId,
+        },
+      };
+    } else {
+      updateData.subscription = {
+        create: {
+          planId: body.planId,
+          status: "Inactive",
+        },
+      };
+    }
+  }
 
   const updating = await db.organization.update({
     where: { id: org.id },
     data: updateData,
-    include: { plan: true },
+    include: {
+      subscription: {
+        include: {
+          plan: true,
+        },
+      },
+    },
   });
 
   if (!updating?.id)
@@ -192,7 +236,13 @@ export const adminShowOrgService = async (
       slug: params.slug,
       id: params.id,
     },
-    include: { plan: true },
+    include: {
+      subscription: {
+        include: {
+          plan: true,
+        },
+      },
+    },
   });
   if (!org?.id)
     throw new ApiError("Organization with this slug/id doesnt exist");
@@ -205,21 +255,20 @@ export const adminShowOrgService = async (
 };
 
 export const adminCreatePaymentLinkService = async (organizationId: string) => {
-  const org = await db.organization.findUnique({
-    where: { id: organizationId },
+  const subscription = await db.subscription.findUnique({
+    where: { organizationId },
     include: { plan: true },
   });
-  if (!org) throw new ApiError("Organization not found");
-  if (!org.plan?.id)
-    throw new ApiError("This organization doesnt have a plan yet.");
+
+  if (!subscription)
+    throw new ApiError("Organization does not have a subscription");
 
   const periodStart = new Date();
   const periodEnd = new Date();
   periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-  const referenceId = `org-${organizationId}-${Date.now()}`;
+  const referenceId = `sub-${subscription.id}-${Date.now()}`;
 
-  // IQD only. Ensure integer and >= 1000 for Wayl.
   const toIQDInt = (v: unknown) => {
     const n =
       typeof v === "number"
@@ -233,7 +282,7 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
     return Math.max(1000, Math.round(n));
   };
 
-  const amountIQD = toIQDInt(org.plan.price);
+  const amountIQD = toIQDInt(subscription.plan.price);
 
   const waylResponse = await fetch(`${Bun.env.WAYL_API_URL}/api/v1/links`, {
     method: "POST",
@@ -247,7 +296,7 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
       currency: "IQD",
       lineItem: [
         {
-          label: `${(org.plan as any)?.name?.en || (org.plan as any)?.name || "Plan"}`,
+          label: `${(subscription.plan as any)?.name?.en || (subscription.plan as any)?.name || "Plan"}`,
           amount: amountIQD,
           type: "increase",
           image:
@@ -273,7 +322,7 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
       paidAt: new Date(),
       periodStart,
       periodEnd,
-      organizationId,
+      subscriptionId: subscription.id,
       waylReferenceId: linkData.referenceId,
       waylLinkId: linkData.id,
       waylStatus: "Pending",
@@ -300,7 +349,6 @@ function verifyWebhookSignature(
   signature: string,
   secret: string
 ) {
-  //generate signature from data and secret
   const calculatedSignature = crypto
     .createHmac("sha256", secret)
     .update(data)
@@ -314,7 +362,6 @@ function verifyWebhookSignature(
   }
 
   return crypto.timingSafeEqual(signatureBuffer, calculatedSignatureBuffer);
-  // true if the signature is valid, false otherwise
 }
 
 export const handleWaylWebhookService = async (
@@ -350,7 +397,7 @@ export const handleWaylWebhookService = async (
 
   const payment = await db.payment.findFirst({
     where: { waylReferenceId: referenceId },
-    include: { organization: true },
+    include: { subscription: true },
   });
 
   if (!payment) {
@@ -374,11 +421,11 @@ export const handleWaylWebhookService = async (
     },
   });
 
-  await db.organization.update({
-    where: { id: payment.organizationId },
+  await db.subscription.update({
+    where: { id: payment.subscriptionId },
     data: {
-      subscriptionStatus: SubscriptionStatus.ACTIVE,
-      subscriptionEndsAt: payment.periodEnd,
+      status: SubscriptionStatus.ACTIVE,
+      endsAt: payment.periodEnd,
     },
   });
 
@@ -396,8 +443,16 @@ export const adminListPaymentsService = async (
   const limit = params.limit || 10;
   const skip = (page - 1) * limit;
 
+  const subscription = await db.subscription.findUnique({
+    where: { organizationId: params.organizationId },
+  });
+
+  if (!subscription) {
+    throw new ApiError("Organization does not have a subscription");
+  }
+
   const where = {
-    organizationId: params.organizationId,
+    subscriptionId: subscription.id,
     ...(params.isPaid !== undefined && { isPaid: params.isPaid }),
   };
 

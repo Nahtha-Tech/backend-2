@@ -20,19 +20,8 @@ export const OrganizationPlain = t.Object(
     menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
       additionalProperties: false,
     }),
-    subscriptionStatus: t.Union(
-      [
-        t.Literal("Active"),
-        t.Literal("Inactive"),
-        t.Literal("Trial"),
-        t.Literal("Expired"),
-      ],
-      { additionalProperties: false },
-    ),
-    subscriptionEndsAt: __nullable__(t.Date()),
     createdAt: t.Date(),
     updatedAt: t.Date(),
-    planId: __nullable__(t.String()),
   },
   { additionalProperties: false },
 );
@@ -122,45 +111,27 @@ export const OrganizationRelations = t.Object(
       ),
       { additionalProperties: false },
     ),
-    plan: __nullable__(
+    subscription: __nullable__(
       t.Object(
         {
           id: t.String(),
-          name: t.Any({ description: `[LocalString]` }),
-          description: __nullable__(t.Any({ description: `[LocalString]` })),
-          price: t.Integer(),
-          maxCategories: t.Integer(),
-          maxItems: t.Integer(),
-          maxStaff: t.Integer(),
-          maxMedia: t.Integer(),
-          isActive: t.Boolean(),
-          createdAt: t.Date(),
-          updatedAt: t.Date(),
-        },
-        { additionalProperties: false },
-      ),
-    ),
-    payments: t.Array(
-      t.Object(
-        {
-          id: t.String(),
-          amount: t.Integer(),
-          paidAt: t.Date(),
-          periodStart: t.Date(),
-          periodEnd: t.Date(),
-          notes: __nullable__(t.String()),
-          imageUrl: __nullable__(t.String()),
-          waylReferenceId: __nullable__(t.String()),
-          waylLinkId: __nullable__(t.String()),
-          waylStatus: __nullable__(t.String()),
-          isPaid: t.Boolean(),
           organizationId: t.String(),
+          planId: t.String(),
+          status: t.Union(
+            [
+              t.Literal("Active"),
+              t.Literal("Inactive"),
+              t.Literal("Trial"),
+              t.Literal("Expired"),
+            ],
+            { additionalProperties: false },
+          ),
+          endsAt: __nullable__(t.Date()),
           createdAt: t.Date(),
           updatedAt: t.Date(),
         },
         { additionalProperties: false },
       ),
-      { additionalProperties: false },
     ),
   },
   { additionalProperties: false },
@@ -183,18 +154,6 @@ export const OrganizationPlainInputCreate = t.Object(
     menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
       additionalProperties: false,
     }),
-    subscriptionStatus: t.Optional(
-      t.Union(
-        [
-          t.Literal("Active"),
-          t.Literal("Inactive"),
-          t.Literal("Trial"),
-          t.Literal("Expired"),
-        ],
-        { additionalProperties: false },
-      ),
-    ),
-    subscriptionEndsAt: t.Optional(__nullable__(t.Date())),
   },
   { additionalProperties: false },
 );
@@ -220,18 +179,6 @@ export const OrganizationPlainInputUpdate = t.Object(
         additionalProperties: false,
       }),
     ),
-    subscriptionStatus: t.Optional(
-      t.Union(
-        [
-          t.Literal("Active"),
-          t.Literal("Inactive"),
-          t.Literal("Trial"),
-          t.Literal("Expired"),
-        ],
-        { additionalProperties: false },
-      ),
-    ),
-    subscriptionEndsAt: t.Optional(__nullable__(t.Date())),
   },
   { additionalProperties: false },
 );
@@ -302,29 +249,13 @@ export const OrganizationRelationsInputCreate = t.Object(
         { additionalProperties: false },
       ),
     ),
-    plan: t.Optional(
+    subscription: t.Optional(
       t.Object(
         {
           connect: t.Object(
             {
               id: t.String({ additionalProperties: false }),
             },
-            { additionalProperties: false },
-          ),
-        },
-        { additionalProperties: false },
-      ),
-    ),
-    payments: t.Optional(
-      t.Object(
-        {
-          connect: t.Array(
-            t.Object(
-              {
-                id: t.String({ additionalProperties: false }),
-              },
-              { additionalProperties: false },
-            ),
             { additionalProperties: false },
           ),
         },
@@ -438,7 +369,7 @@ export const OrganizationRelationsInputUpdate = t.Partial(
           { additionalProperties: false },
         ),
       ),
-      plan: t.Partial(
+      subscription: t.Partial(
         t.Object(
           {
             connect: t.Object(
@@ -448,31 +379,6 @@ export const OrganizationRelationsInputUpdate = t.Partial(
               { additionalProperties: false },
             ),
             disconnect: t.Boolean(),
-          },
-          { additionalProperties: false },
-        ),
-      ),
-      payments: t.Partial(
-        t.Object(
-          {
-            connect: t.Array(
-              t.Object(
-                {
-                  id: t.String({ additionalProperties: false }),
-                },
-                { additionalProperties: false },
-              ),
-              { additionalProperties: false },
-            ),
-            disconnect: t.Array(
-              t.Object(
-                {
-                  id: t.String({ additionalProperties: false }),
-                },
-                { additionalProperties: false },
-              ),
-              { additionalProperties: false },
-            ),
           },
           { additionalProperties: false },
         ),
@@ -504,19 +410,8 @@ export const OrganizationWhere = t.Partial(
           menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
             additionalProperties: false,
           }),
-          subscriptionStatus: t.Union(
-            [
-              t.Literal("Active"),
-              t.Literal("Inactive"),
-              t.Literal("Trial"),
-              t.Literal("Expired"),
-            ],
-            { additionalProperties: false },
-          ),
-          subscriptionEndsAt: t.Date(),
           createdAt: t.Date(),
           updatedAt: t.Date(),
-          planId: t.String(),
         },
         { additionalProperties: false },
       ),
@@ -572,19 +467,8 @@ export const OrganizationWhereUnique = t.Recursive(
                 t.Any({ description: `[menuStructure]` }),
                 { additionalProperties: false },
               ),
-              subscriptionStatus: t.Union(
-                [
-                  t.Literal("Active"),
-                  t.Literal("Inactive"),
-                  t.Literal("Trial"),
-                  t.Literal("Expired"),
-                ],
-                { additionalProperties: false },
-              ),
-              subscriptionEndsAt: t.Date(),
               createdAt: t.Date(),
               updatedAt: t.Date(),
-              planId: t.String(),
             },
             { additionalProperties: false },
           ),
@@ -612,13 +496,9 @@ export const OrganizationSelect = t.Partial(
       items: t.Boolean(),
       menuStructure: t.Boolean(),
       medias: t.Boolean(),
-      plan: t.Boolean(),
-      payments: t.Boolean(),
-      subscriptionStatus: t.Boolean(),
-      subscriptionEndsAt: t.Boolean(),
+      subscription: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
-      planId: t.Boolean(),
       _count: t.Boolean(),
     },
     { additionalProperties: false },
@@ -632,9 +512,7 @@ export const OrganizationInclude = t.Partial(
       categories: t.Boolean(),
       items: t.Boolean(),
       medias: t.Boolean(),
-      plan: t.Boolean(),
-      payments: t.Boolean(),
-      subscriptionStatus: t.Boolean(),
+      subscription: t.Boolean(),
       _count: t.Boolean(),
     },
     { additionalProperties: false },
@@ -674,16 +552,10 @@ export const OrganizationOrderBy = t.Partial(
       menuStructure: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      subscriptionEndsAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
-        additionalProperties: false,
-      }),
       createdAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
       updatedAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
-        additionalProperties: false,
-      }),
-      planId: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
     },

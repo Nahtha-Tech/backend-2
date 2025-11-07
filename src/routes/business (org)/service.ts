@@ -5,12 +5,21 @@ import {
   updateOrgBodySchema,
 } from "./schemas/request-body";
 import ApiError from "@/src/utils/global-error";
-import { getMenuStructureQueryParamsSchema, listPaymentsQueryParamsSchema } from "./schemas/query-params";
+import {
+  getMenuStructureQueryParamsSchema,
+  listPaymentsQueryParamsSchema,
+} from "./schemas/query-params";
 
 export const getOrgService = async (organizationId: string) => {
   const org = await db.organization.findUnique({
     where: { id: organizationId },
-    include: { plan: true },
+    include: {
+      subscription: {
+        include: {
+          plan: true,
+        },
+      },
+    },
   });
 
   if (!org) throw new ApiError("Organization not found");
@@ -45,7 +54,13 @@ export const updateOrgService = async (
   const updated = await db.organization.update({
     where: { id: organizationId },
     data: updateData,
-    include: { plan: true },
+    include: {
+      subscription: {
+        include: {
+          plan: true,
+        },
+      },
+    },
   });
 
   if (!updated) throw new ApiError("Failed to update organization");
@@ -183,8 +198,16 @@ export const listPaymentsService = async (
   const limit = params.limit || 10;
   const skip = (page - 1) * limit;
 
+  const subscription = await db.subscription.findUnique({
+    where: { organizationId },
+  });
+
+  if (!subscription) {
+    throw new ApiError("Organization does not have a subscription");
+  }
+
   const where = {
-    organizationId,
+    subscriptionId: subscription.id,
     ...(params.isPaid !== undefined && { isPaid: params.isPaid }),
   };
 

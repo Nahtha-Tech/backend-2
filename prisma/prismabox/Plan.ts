@@ -23,24 +23,13 @@ export const PlanPlain = t.Object(
 
 export const PlanRelations = t.Object(
   {
-    organizations: t.Array(
+    subscriptions: t.Array(
       t.Object(
         {
           id: t.String(),
-          name: t.Any({ description: `[LocalString]` }),
-          description: __nullable__(t.Any({ description: `[LocalString]` })),
-          phoneNumber: __nullable__(t.String()),
-          email: __nullable__(t.String()),
-          googleMapsLink: __nullable__(t.String()),
-          socialMedia: t.Array(t.Any({ description: `[SocialMediaLink]` }), {
-            additionalProperties: false,
-          }),
-          slug: t.String(),
-          logoImgUrl: __nullable__(t.String()),
-          menuStructure: t.Array(t.Any({ description: `[menuStructure]` }), {
-            additionalProperties: false,
-          }),
-          subscriptionStatus: t.Union(
+          organizationId: t.String(),
+          planId: t.String(),
+          status: t.Union(
             [
               t.Literal("Active"),
               t.Literal("Inactive"),
@@ -49,10 +38,9 @@ export const PlanRelations = t.Object(
             ],
             { additionalProperties: false },
           ),
-          subscriptionEndsAt: __nullable__(t.Date()),
+          endsAt: __nullable__(t.Date()),
           createdAt: t.Date(),
           updatedAt: t.Date(),
-          planId: __nullable__(t.String()),
         },
         { additionalProperties: false },
       ),
@@ -96,7 +84,7 @@ export const PlanPlainInputUpdate = t.Object(
 
 export const PlanRelationsInputCreate = t.Object(
   {
-    organizations: t.Optional(
+    subscriptions: t.Optional(
       t.Object(
         {
           connect: t.Array(
@@ -119,7 +107,7 @@ export const PlanRelationsInputCreate = t.Object(
 export const PlanRelationsInputUpdate = t.Partial(
   t.Object(
     {
-      organizations: t.Partial(
+      subscriptions: t.Partial(
         t.Object(
           {
             connect: t.Array(
@@ -236,7 +224,7 @@ export const PlanSelect = t.Partial(
       maxStaff: t.Boolean(),
       maxMedia: t.Boolean(),
       isActive: t.Boolean(),
-      organizations: t.Boolean(),
+      subscriptions: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
       _count: t.Boolean(),
@@ -247,7 +235,7 @@ export const PlanSelect = t.Partial(
 
 export const PlanInclude = t.Partial(
   t.Object(
-    { organizations: t.Boolean(), _count: t.Boolean() },
+    { subscriptions: t.Boolean(), _count: t.Boolean() },
     { additionalProperties: false },
   ),
 );

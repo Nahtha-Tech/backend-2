@@ -4,20 +4,28 @@ import { __transformDate__ } from "./__transformDate__";
 
 import { __nullable__ } from "./__nullable__";
 
-export const CategoryPlain = t.Object(
+export const SubscriptionPlain = t.Object(
   {
     id: t.String(),
-    slug: t.String(),
-    name: t.Any({ description: `[LocalString]` }),
-    imageUrl: __nullable__(t.String()),
     organizationId: t.String(),
+    planId: t.String(),
+    status: t.Union(
+      [
+        t.Literal("Active"),
+        t.Literal("Inactive"),
+        t.Literal("Trial"),
+        t.Literal("Expired"),
+      ],
+      { additionalProperties: false },
+    ),
+    endsAt: __nullable__(t.Date()),
     createdAt: t.Date(),
     updatedAt: t.Date(),
   },
   { additionalProperties: false },
 );
 
-export const CategoryRelations = t.Object(
+export const SubscriptionRelations = t.Object(
   {
     organization: t.Object(
       {
@@ -40,20 +48,37 @@ export const CategoryRelations = t.Object(
       },
       { additionalProperties: false },
     ),
-    items: t.Array(
+    plan: t.Object(
+      {
+        id: t.String(),
+        name: t.Any({ description: `[LocalString]` }),
+        description: __nullable__(t.Any({ description: `[LocalString]` })),
+        price: t.Integer(),
+        maxCategories: t.Integer(),
+        maxItems: t.Integer(),
+        maxStaff: t.Integer(),
+        maxMedia: t.Integer(),
+        isActive: t.Boolean(),
+        createdAt: t.Date(),
+        updatedAt: t.Date(),
+      },
+      { additionalProperties: false },
+    ),
+    payments: t.Array(
       t.Object(
         {
           id: t.String(),
-          slug: t.String(),
-          name: t.Any({ description: `[LocalString]` }),
-          description: __nullable__(t.Any({ description: `[LocalString]` })),
-          imageUrl: t.Array(t.String(), { additionalProperties: false }),
-          basePrice: t.String(),
-          variantGroups: __nullable__(
-            t.Any({ description: `[ItemVariantGroup]` }),
-          ),
-          organizationId: t.String(),
-          categoryId: __nullable__(t.String()),
+          amount: t.Integer(),
+          paidAt: t.Date(),
+          periodStart: t.Date(),
+          periodEnd: t.Date(),
+          notes: __nullable__(t.String()),
+          imageUrl: __nullable__(t.String()),
+          waylReferenceId: __nullable__(t.String()),
+          waylLinkId: __nullable__(t.String()),
+          waylStatus: __nullable__(t.String()),
+          isPaid: t.Boolean(),
+          subscriptionId: t.String(),
           createdAt: t.Date(),
           updatedAt: t.Date(),
         },
@@ -65,25 +90,43 @@ export const CategoryRelations = t.Object(
   { additionalProperties: false },
 );
 
-export const CategoryPlainInputCreate = t.Object(
+export const SubscriptionPlainInputCreate = t.Object(
   {
-    slug: t.String(),
-    name: t.Any({ description: `[LocalString]` }),
-    imageUrl: t.Optional(__nullable__(t.String())),
+    status: t.Optional(
+      t.Union(
+        [
+          t.Literal("Active"),
+          t.Literal("Inactive"),
+          t.Literal("Trial"),
+          t.Literal("Expired"),
+        ],
+        { additionalProperties: false },
+      ),
+    ),
+    endsAt: t.Optional(__nullable__(t.Date())),
   },
   { additionalProperties: false },
 );
 
-export const CategoryPlainInputUpdate = t.Object(
+export const SubscriptionPlainInputUpdate = t.Object(
   {
-    slug: t.Optional(t.String()),
-    name: t.Optional(t.Any({ description: `[LocalString]` })),
-    imageUrl: t.Optional(__nullable__(t.String())),
+    status: t.Optional(
+      t.Union(
+        [
+          t.Literal("Active"),
+          t.Literal("Inactive"),
+          t.Literal("Trial"),
+          t.Literal("Expired"),
+        ],
+        { additionalProperties: false },
+      ),
+    ),
+    endsAt: t.Optional(__nullable__(t.Date())),
   },
   { additionalProperties: false },
 );
 
-export const CategoryRelationsInputCreate = t.Object(
+export const SubscriptionRelationsInputCreate = t.Object(
   {
     organization: t.Object(
       {
@@ -96,7 +139,18 @@ export const CategoryRelationsInputCreate = t.Object(
       },
       { additionalProperties: false },
     ),
-    items: t.Optional(
+    plan: t.Object(
+      {
+        connect: t.Object(
+          {
+            id: t.String({ additionalProperties: false }),
+          },
+          { additionalProperties: false },
+        ),
+      },
+      { additionalProperties: false },
+    ),
+    payments: t.Optional(
       t.Object(
         {
           connect: t.Array(
@@ -116,7 +170,7 @@ export const CategoryRelationsInputCreate = t.Object(
   { additionalProperties: false },
 );
 
-export const CategoryRelationsInputUpdate = t.Partial(
+export const SubscriptionRelationsInputUpdate = t.Partial(
   t.Object(
     {
       organization: t.Object(
@@ -130,7 +184,18 @@ export const CategoryRelationsInputUpdate = t.Partial(
         },
         { additionalProperties: false },
       ),
-      items: t.Partial(
+      plan: t.Object(
+        {
+          connect: t.Object(
+            {
+              id: t.String({ additionalProperties: false }),
+            },
+            { additionalProperties: false },
+          ),
+        },
+        { additionalProperties: false },
+      ),
+      payments: t.Partial(
         t.Object(
           {
             connect: t.Array(
@@ -160,7 +225,7 @@ export const CategoryRelationsInputUpdate = t.Partial(
   ),
 );
 
-export const CategoryWhere = t.Partial(
+export const SubscriptionWhere = t.Partial(
   t.Recursive(
     (Self) =>
       t.Object(
@@ -169,32 +234,43 @@ export const CategoryWhere = t.Partial(
           NOT: t.Union([Self, t.Array(Self, { additionalProperties: false })]),
           OR: t.Array(Self, { additionalProperties: false }),
           id: t.String(),
-          slug: t.String(),
-          name: t.Any({ description: `[LocalString]` }),
-          imageUrl: t.String(),
           organizationId: t.String(),
+          planId: t.String(),
+          status: t.Union(
+            [
+              t.Literal("Active"),
+              t.Literal("Inactive"),
+              t.Literal("Trial"),
+              t.Literal("Expired"),
+            ],
+            { additionalProperties: false },
+          ),
+          endsAt: t.Date(),
           createdAt: t.Date(),
           updatedAt: t.Date(),
         },
         { additionalProperties: false },
       ),
-    { $id: "Category" },
+    { $id: "Subscription" },
   ),
 );
 
-export const CategoryWhereUnique = t.Recursive(
+export const SubscriptionWhereUnique = t.Recursive(
   (Self) =>
     t.Intersect(
       [
         t.Partial(
           t.Object(
-            { id: t.String(), slug: t.String() },
+            { id: t.String(), organizationId: t.String() },
             { additionalProperties: false },
           ),
           { additionalProperties: false },
         ),
         t.Union(
-          [t.Object({ id: t.String() }), t.Object({ slug: t.String() })],
+          [
+            t.Object({ id: t.String() }),
+            t.Object({ organizationId: t.String() }),
+          ],
           { additionalProperties: false },
         ),
         t.Partial(
@@ -215,10 +291,18 @@ export const CategoryWhereUnique = t.Recursive(
           t.Object(
             {
               id: t.String(),
-              slug: t.String(),
-              name: t.Any({ description: `[LocalString]` }),
-              imageUrl: t.String(),
               organizationId: t.String(),
+              planId: t.String(),
+              status: t.Union(
+                [
+                  t.Literal("Active"),
+                  t.Literal("Inactive"),
+                  t.Literal("Trial"),
+                  t.Literal("Expired"),
+                ],
+                { additionalProperties: false },
+              ),
+              endsAt: t.Date(),
               createdAt: t.Date(),
               updatedAt: t.Date(),
             },
@@ -228,19 +312,20 @@ export const CategoryWhereUnique = t.Recursive(
       ],
       { additionalProperties: false },
     ),
-  { $id: "Category" },
+  { $id: "Subscription" },
 );
 
-export const CategorySelect = t.Partial(
+export const SubscriptionSelect = t.Partial(
   t.Object(
     {
       id: t.Boolean(),
-      slug: t.Boolean(),
-      name: t.Boolean(),
-      imageUrl: t.Boolean(),
       organization: t.Boolean(),
       organizationId: t.Boolean(),
-      items: t.Boolean(),
+      plan: t.Boolean(),
+      planId: t.Boolean(),
+      status: t.Boolean(),
+      endsAt: t.Boolean(),
+      payments: t.Boolean(),
       createdAt: t.Boolean(),
       updatedAt: t.Boolean(),
       _count: t.Boolean(),
@@ -249,29 +334,32 @@ export const CategorySelect = t.Partial(
   ),
 );
 
-export const CategoryInclude = t.Partial(
+export const SubscriptionInclude = t.Partial(
   t.Object(
-    { organization: t.Boolean(), items: t.Boolean(), _count: t.Boolean() },
+    {
+      organization: t.Boolean(),
+      plan: t.Boolean(),
+      status: t.Boolean(),
+      payments: t.Boolean(),
+      _count: t.Boolean(),
+    },
     { additionalProperties: false },
   ),
 );
 
-export const CategoryOrderBy = t.Partial(
+export const SubscriptionOrderBy = t.Partial(
   t.Object(
     {
       id: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      slug: t.Union([t.Literal("asc"), t.Literal("desc")], {
-        additionalProperties: false,
-      }),
-      name: t.Union([t.Literal("asc"), t.Literal("desc")], {
-        additionalProperties: false,
-      }),
-      imageUrl: t.Union([t.Literal("asc"), t.Literal("desc")], {
-        additionalProperties: false,
-      }),
       organizationId: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      planId: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      endsAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
       createdAt: t.Union([t.Literal("asc"), t.Literal("desc")], {
@@ -285,16 +373,17 @@ export const CategoryOrderBy = t.Partial(
   ),
 );
 
-export const Category = t.Composite([CategoryPlain, CategoryRelations], {
-  additionalProperties: false,
-});
-
-export const CategoryInputCreate = t.Composite(
-  [CategoryPlainInputCreate, CategoryRelationsInputCreate],
+export const Subscription = t.Composite(
+  [SubscriptionPlain, SubscriptionRelations],
   { additionalProperties: false },
 );
 
-export const CategoryInputUpdate = t.Composite(
-  [CategoryPlainInputUpdate, CategoryRelationsInputUpdate],
+export const SubscriptionInputCreate = t.Composite(
+  [SubscriptionPlainInputCreate, SubscriptionRelationsInputCreate],
+  { additionalProperties: false },
+);
+
+export const SubscriptionInputUpdate = t.Composite(
+  [SubscriptionPlainInputUpdate, SubscriptionRelationsInputUpdate],
   { additionalProperties: false },
 );
