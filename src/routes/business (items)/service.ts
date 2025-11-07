@@ -10,6 +10,7 @@ import {
   listItemsQueryParamsSchema,
   searchItemsQueryParamsSchema,
 } from "./schemas/query-params";
+import { checkPlanLimit } from "@/src/utils/plan-limits";
 
 export const listItemsService = async (
   organizationId: string,
@@ -51,6 +52,8 @@ export const createItemService = async (
   organizationId: string,
   body: Static<typeof createItemBodySchema>
 ) => {
+  await checkPlanLimit(organizationId, "items");
+
   const check = await db.item.findUnique({
     where: {
       slug: body.slug,

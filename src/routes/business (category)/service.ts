@@ -10,6 +10,7 @@ import {
   listCategoriesQueryParamsSchema,
   searchCategoriesQueryParamsSchema,
 } from "./schemas/query-params";
+import { checkPlanLimit } from "@/src/utils/plan-limits";
 
 export const listCategoriesService = async (
   organizationId: string,
@@ -56,6 +57,8 @@ export const createCategoryService = async (
       slug: body.slug,
     },
   });
+  await checkPlanLimit(organizationId, "categories");
+
   if (check?.id) throw new ApiError("Category with this slug already exists");
 
   const newCategory = await db.category.create({

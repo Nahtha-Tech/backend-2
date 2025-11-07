@@ -234,6 +234,24 @@ export const adminAssignUserToOrgService = async (
 
   if (!org?.id) throw new ApiError("Organization doesnt exist");
 
+  // Check staff limit BEFORE assigning
+  const subscription = await db.subscription.findUnique({
+    where: { organizationId: body.organizationId },
+    include: { plan: true },
+  });
+
+  if (!subscription) throw new ApiError("Organization has no subscription");
+
+  const currentStaffCount = await db.user.count({
+    where: { organizationId: body.organizationId },
+  });
+
+  if (currentStaffCount >= subscription.plan.maxStaff) {
+    throw new ApiError(
+      `Plan limit reached. Your plan allows ${subscription.plan.maxStaff} staff members. Upgrade to add more.`
+    );
+  }
+
   const updating = await db.user.update({
     where: { id: user.id },
     data: {

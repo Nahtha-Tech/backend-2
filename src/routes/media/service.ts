@@ -49,6 +49,24 @@ export const uploadMediaService = async (
     throw new ApiError("Only image files are allowed");
   }
 
+  // Check media limit BEFORE uploading
+  const subscription = await db.subscription.findUnique({
+    where: { organizationId },
+    include: { plan: true },
+  });
+
+  if (!subscription) throw new ApiError("Organization has no subscription");
+
+  const currentMediaCount = await db.media.count({
+    where: { organizationId },
+  });
+
+  if (currentMediaCount >= subscription.plan.maxMedia) {
+    throw new ApiError(
+      `Plan limit reached. Your plan allows ${subscription.plan.maxMedia} media files. Upgrade to add more.`
+    );
+  }
+
   try {
     const optimizedBuffer = await optimizeImage(file);
     const customName = `${entityId}.webp`;
