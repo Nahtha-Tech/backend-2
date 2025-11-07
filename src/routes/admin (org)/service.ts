@@ -263,6 +263,40 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
   if (!subscription)
     throw new ApiError("Organization does not have a subscription");
 
+  const existingLink = await db.payment.findFirst({
+    where: {
+      subscriptionId: subscription.id,
+      isPaid: false,
+    },
+  });
+
+  if (existingLink) {
+    const waylResponse = await fetch(
+      `${Bun.env.WAYL_API_URL}/api/v1/links/${existingLink.waylReferenceId}`,
+      {
+        method: "GET",
+        headers: {
+          "X-WAYL-AUTHENTICATION": Bun.env.WAYL_API_KEY!,
+        },
+      }
+    );
+
+    if (waylResponse.ok) {
+      const { data: linkData } = await waylResponse.json();
+      return {
+        success: true,
+        message: "Existing payment link returned",
+        data: {
+          paymentId: existingLink.id,
+          paymentUrl: linkData.url,
+          amount: existingLink.amount,
+          currency: "IQD",
+          expiresAt: existingLink.periodEnd,
+        },
+      };
+    }
+  }
+
   const periodStart = new Date();
   const periodEnd = new Date();
   periodEnd.setMonth(periodEnd.getMonth() + 1);
@@ -284,33 +318,41 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
 
   const amountIQD = toIQDInt(subscription.plan.price);
 
+  const requestBody = {
+    referenceId,
+    total: amountIQD,
+    currency: "IQD",
+    lineItem: [
+      {
+        label: `${(subscription.plan as any)?.name?.en || (subscription.plan as any)?.name || "Plan"}`,
+        amount: amountIQD,
+        type: "increase" as const,
+        image:
+          "https://www.fabulousflowers.co.za/cdn/shop/files/LushWonderFlowerBouquet-FabulousFlowersandGifts3.jpg",
+      },
+    ],
+    webhookUrl: `${Bun.env.BACKEND_URL}/webhooks/wayl`,
+    webhookSecret: Bun.env.WAYL_WEBHOOK_SECRET!,
+    redirectionUrl: `${Bun.env.FRONTEND_URL}/payment/success`,
+  };
+
+  console.log("Wayl Request:", {
+    url: `${Bun.env.WAYL_API_URL}/api/v1/links`,
+    body: requestBody,
+  });
+
   const waylResponse = await fetch(`${Bun.env.WAYL_API_URL}/api/v1/links`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "X-WAYL-AUTHENTICATION": Bun.env.WAYL_API_KEY!,
     },
-    body: JSON.stringify({
-      referenceId,
-      total: amountIQD,
-      currency: "IQD",
-      lineItem: [
-        {
-          label: `${(subscription.plan as any)?.name?.en || (subscription.plan as any)?.name || "Plan"}`,
-          amount: amountIQD,
-          type: "increase",
-          image:
-            "https://img.freepik.com/free-photo/3d-hand-making-cashless-payment-from-smartphone_107791-16609.jpg?w=740&q=80",
-        },
-      ],
-      webhookUrl: `${Bun.env.BACKEND_URL}/webhooks/wayl`,
-      webhookSecret: Bun.env.WAYL_WEBHOOK_SECRET!,
-      redirectionUrl: `${Bun.env.FRONTEND_URL}/payment/success`,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!waylResponse.ok) {
     const errorText = await waylResponse.text();
+    console.error("Wayl Error Response:", errorText);
     throw new ApiError(`Wayl API error: ${errorText}`);
   }
 
@@ -319,7 +361,7 @@ export const adminCreatePaymentLinkService = async (organizationId: string) => {
   const payment = await db.payment.create({
     data: {
       amount: amountIQD,
-      paidAt: new Date(),
+      paidAt: undefined,
       periodStart,
       periodEnd,
       subscriptionId: subscription.id,
@@ -369,6 +411,11 @@ export const handleWaylWebhookService = async (
   signature: string | undefined
 ) => {
   const secret = Bun.env.WAYL_WEBHOOK_SECRET;
+  console.log("=== Webhook Service Debug ===");
+  console.log("Secret exists:", !!secret);
+  console.log("Secret length:", secret?.length);
+  console.log("Signature:", signature);
+  console.log("Raw body:", rawBody);
 
   if (!secret) {
     throw new ApiError("Webhook secret is not configured.");
@@ -384,6 +431,7 @@ export const handleWaylWebhookService = async (
   }
 
   const webhookData = JSON.parse(rawBody);
+  console.log("webhookData --->", webhookData);
 
   const { referenceId, paymentStatus, completedAt } = webhookData;
 

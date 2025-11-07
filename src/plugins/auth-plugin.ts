@@ -52,15 +52,25 @@ export const businessPlugin = (app: Elysia) =>
     const subscription = await db.subscription.findUnique({
       where: { organizationId: user.organizationId },
       select: {
+        id: true,
         status: true,
         endsAt: true,
       },
     });
 
-    if (
-      subscription?.status !== "Active" ||
-      (subscription.endsAt && subscription.endsAt < new Date())
-    ) {
+    if (!subscription) throw new ApiError("Subscription not found", 402);
+
+    const isExpired = subscription.endsAt && subscription.endsAt < new Date();
+
+    if (isExpired && subscription.status !== "Expired") {
+      await db.subscription.update({
+        where: { id: subscription.id },
+        data: { status: "Expired" },
+      });
+      throw new ApiError("Subscription expired", 402);
+    }
+
+    if (subscription.status !== "Active") {
       throw new ApiError("Subscription inactive or expired", 402);
     }
 

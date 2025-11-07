@@ -136,6 +136,13 @@ export const waylWebhookRoute = new Elysia({
   "/wayl",
   async ({ body, headers }) => {
     const signature = headers["x-wayl-signature-256"];
+
+    console.log("=== Webhook Debug Info ===");
+    console.log("All headers:", headers);
+    console.log("Signature header:", headers["x-wayl-signature-256"]);
+    console.log("Body type:", typeof body);
+    console.log("Body content:", body);
+
     return await handleWaylWebhookService(body, signature);
   },
   {
