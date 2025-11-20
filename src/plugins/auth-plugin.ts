@@ -47,6 +47,19 @@ export const businessPlugin = (app: Elysia) =>
     if (!user?.id) throw new ApiError("Unauthorized.", 401);
 
     if (!user.organizationId)
+      throw new ApiError("User not associated with any organization.")
+
+    return {
+      organizationId: user.organizationId,
+    };
+  });
+
+export const businessExpirationCheckPlugin = (app: Elysia) =>
+  app.use(authPlugin).use(businessPlugin).derive(async ({ user }) => {
+
+    if (!user?.id) throw new ApiError("Unauthorized.", 401);
+
+    if (!user.organizationId)
       throw new ApiError("User not associated with any organization.");
 
     const subscription = await db.subscription.findUnique({

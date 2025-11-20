@@ -59,7 +59,7 @@ export const createOrgBodySchema = t.Object({
   slug: t.String({
     format: "uri-reference",
     description: "Organization slug (unique identifier)",
-    examples: ["my-restaurant"],
+    examples: ["omaro-llc"],
   }),
   logoImgUrl: t.Optional(
     t.String({
@@ -108,7 +108,7 @@ export const updateOrgBodySchema = t.Object({
     t.String({
       format: "uri-reference",
       description: "Organization slug (unique identifier)",
-      examples: ["my-restaurant"],
+      examples: ["omaro-llc"],
     })
   ),
   logoImgUrl: t.Optional(

@@ -7,6 +7,7 @@ import { businessItemRoutes } from "./business (items)/route";
 import { mediaRoutes } from "./media/route";
 import { businessOrgRoutes } from "./business (org)/route";
 import { adminPlanRoutes } from "./admin (plan)/route";
+import { publicRoutes } from "./public/route";
 
 const AllRoutes = new Elysia()
   .use(authRoutes)
@@ -17,6 +18,7 @@ const AllRoutes = new Elysia()
   .use(businessItemRoutes)
   .use(mediaRoutes)
   .use(businessOrgRoutes)
+  .use(publicRoutes)
   .use(waylWebhookRoute);
 
 export default AllRoutes;

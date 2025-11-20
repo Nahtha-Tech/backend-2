@@ -7,7 +7,10 @@ import {
   deleteMediaQueryParams,
 } from "./schemas/query-params";
 import { uploadMediaService, deleteMediaService } from "./service";
-import { businessPlugin } from "@/src/plugins/auth-plugin";
+import {
+  businessExpirationCheckPlugin,
+  businessPlugin,
+} from "@/src/plugins/auth-plugin";
 import Response from "@/src/utils/global-response";
 import ApiError from "@/src/utils/global-error";
 
@@ -16,6 +19,8 @@ export const mediaRoutes = new Elysia({
   tags: ["Media"],
 })
   .use(businessPlugin)
+  .use(businessExpirationCheckPlugin)
+  
   .post(
     "/upload",
     async ({ body, query, organizationId }) => {

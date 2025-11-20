@@ -25,7 +25,10 @@ import {
   showCategoryResponseSchema,
   updateCategoryResponseSchema,
 } from "./schemas/response";
-import { businessPlugin } from "@/src/plugins/auth-plugin";
+import {
+  businessExpirationCheckPlugin,
+  businessPlugin,
+} from "@/src/plugins/auth-plugin";
 import {
   createCategoryService,
   deleteCategoryService,
@@ -40,6 +43,7 @@ export const businessCategoryRoutes = new Elysia({
   tags: ["business (Category)"],
 })
   .use(businessPlugin)
+  .use(businessExpirationCheckPlugin)
 
   .get(
     "/",

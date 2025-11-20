@@ -25,7 +25,10 @@ import {
   showItemResponseSchema,
   updateItemResponseSchema,
 } from "./schemas/response";
-import { businessPlugin } from "@/src/plugins/auth-plugin";
+import {
+  businessExpirationCheckPlugin,
+  businessPlugin,
+} from "@/src/plugins/auth-plugin";
 import {
   createItemService,
   deleteItemService,
@@ -40,6 +43,7 @@ export const businessItemRoutes = new Elysia({
   tags: ["business (Item)"],
 })
   .use(businessPlugin)
+  .use(businessExpirationCheckPlugin)
 
   .get(
     "/",
